@@ -54,3 +54,7 @@ stockfish-bin/
 *.nnue
 core
 *.dump
+
+# AI Architecture & Context Guide
+AI_ARCHITECTURE_GUIDE.md
+
