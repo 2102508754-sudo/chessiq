@@ -215,11 +215,9 @@ describe("Day 4: Canonical Move Deduplication & PGN Ingestion Gateway (@BE)", ()
     });
 
     it("rejects request with 400 when PGN has invalid syntax", async () => {
-      const res = await request(app)
-        .post("/api/games/upload")
-        .send({
-          pgn: "Invalid notation that cannot be parsed by chess engine",
-        });
+      const res = await request(app).post("/api/games/upload").send({
+        pgn: "Invalid notation that cannot be parsed by chess engine",
+      });
 
       expect(res.status).toBe(400);
       expect(res.body).toHaveProperty("error", "VALIDATION_ERROR");

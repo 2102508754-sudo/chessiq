@@ -13,10 +13,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const {
-  sweepStaleJobs,
-  StaleRecoveryScheduler,
-} = require("../src/queue");
+const { sweepStaleJobs, StaleRecoveryScheduler } = require("../src/queue");
 
 describe("Day 9: Stale Job Recovery Sweep & Fencing Token Management (@BE)", () => {
   // ==========================================================================
@@ -35,7 +32,9 @@ describe("Day 9: Stale Job Recovery Sweep & Fencing Token Management (@BE)", () 
     it("defines fn_sweep_stale_jobs returning TABLE(swept_job_id UUID, new_status VARCHAR)", () => {
       const sql = fs.readFileSync(migrationPath, "utf8");
       expect(sql).toContain("CREATE OR REPLACE FUNCTION fn_sweep_stale_jobs");
-      expect(sql).toMatch(/RETURNS TABLE\s*\(\s*swept_job_id UUID,\s*new_status VARCHAR\s*\)/i);
+      expect(sql).toMatch(
+        /RETURNS TABLE\s*\(\s*swept_job_id UUID,\s*new_status VARCHAR\s*\)/i,
+      );
     });
 
     it("queries jobs where heartbeat_at < NOW() - interval and status = 'processing'", () => {
@@ -54,14 +53,18 @@ describe("Day 9: Stale Job Recovery Sweep & Fencing Token Management (@BE)", () 
 
     it("physically invalidates stale workers by DELETING claim tokens and lock records", () => {
       const sql = fs.readFileSync(migrationPath, "utf8");
-      expect(sql).toContain("DELETE FROM job_claim_tokens WHERE job_id = r.id;");
+      expect(sql).toContain(
+        "DELETE FROM job_claim_tokens WHERE job_id = r.id;",
+      );
       expect(sql).toContain("DELETE FROM job_locked_by WHERE job_id = r.id;");
       expect(sql).toContain("DELETE FROM job_locked_at WHERE job_id = r.id;");
     });
 
     it("defines diagnostic telemetry function fn_verify_day9_recovery()", () => {
       const sql = fs.readFileSync(migrationPath, "utf8");
-      expect(sql).toContain("CREATE OR REPLACE FUNCTION fn_verify_day9_recovery()");
+      expect(sql).toContain(
+        "CREATE OR REPLACE FUNCTION fn_verify_day9_recovery()",
+      );
       expect(sql).toContain("'fn_sweep_stale_jobs_exists'");
     });
   });
@@ -110,7 +113,9 @@ describe("Day 9: Stale Job Recovery Sweep & Fencing Token Management (@BE)", () 
     it("propagates error when database query fails", async () => {
       mockPool.query.mockRejectedValueOnce(new Error("Database disconnected"));
 
-      await expect(sweepStaleJobs(mockPool)).rejects.toThrow("Database disconnected");
+      await expect(sweepStaleJobs(mockPool)).rejects.toThrow(
+        "Database disconnected",
+      );
     });
   });
 
@@ -177,4 +182,3 @@ describe("Day 9: Stale Job Recovery Sweep & Fencing Token Management (@BE)", () 
     });
   });
 });
-

@@ -74,7 +74,9 @@ chess_project/
 │   └── migrations/
 │       ├── 000_init_extensions.sql       # uuid-ossp, btree_gist, audit & diagnostic
 │       ├── 001_master_6nf_schema.sql     # Irreducible 6NF relations, GiST constraints & triggers
-│       └── 002_reconstruction_views_3nf.sql # Lossless 3NF views (v_users, v_games, etc.)
+│       ├── 002_reconstruction_views_3nf.sql # Lossless 3NF views (v_users, v_games, etc.)
+│       ├── 003_sp_ingest_game_analysis_6nf.sql # PL/pgSQL high-performance bulk ingestion
+│       └── 004_stale_job_recovery_sweep.sql # Stale worker recovery sweep & claim invalidation
 │
 ├── server/                        # Backend API Gateway & Engine Worker
 │   ├── Dockerfile                 # Multi-stage container with Stockfish NNUE
@@ -91,13 +93,22 @@ chess_project/
 │   │   │   ├── stockfishWorker.js # Stockfish child process manager & memory isolation
 │   │   │   ├── stockfishPool.js   # Bounded concurrency worker pool & crash recovery
 │   │   │   └── evalMath.js        # Polarity inversion, continuous mate & mistake tiers
+│   │   ├── queue/
+│   │   │   ├── jobClaim.js        # Isolated FIFO CTE claim (FOR UPDATE SKIP LOCKED)
+│   │   │   ├── heartbeat.js       # Heartbeat watchdog & rowCount === 0 SIGKILL breaker
+│   │   │   ├── staleRecovery.js   # Background scheduler for fn_sweep_stale_jobs
+│   │   │   └── workerLoop.js      # Reactive LISTEN/NOTIFY event loop & job processor
 │   │   └── utils/                 # AppError and Pino structured logger
 │   └── tests/
 │       ├── health.test.js         # Gateway integration test suite
 │       ├── day2-schema.test.js    # 6NF DDL, GiST constraints, and 3NF views suite
+│       ├── day3-ingestion.test.js # High-performance batch ingestion suite
 │       ├── day4-deduplication.test.js # Canonical move deduplication & PGN ingestion suite
 │       ├── day5-stockfish-pool.test.js # Stockfish worker pool & UCI parser suite
-│       └── day6-eval-math.test.js # Engine eval math & polarity inversion suite
+│       ├── day6-eval-math.test.js # Engine eval math & polarity inversion suite
+│       ├── day7-fifo-queue.test.js # Isolated FIFO queue claim & backoff suite
+│       ├── day8-heartbeat-watchdog.test.js # Watchdog heartbeat & SIGKILL breaker suite
+│       └── day9-stale-job-recovery.test.js # Stale job recovery sweep & token invalidation suite
 │
 ├── client/                        # Frontend Single-Domain Client
 │   ├── index.html                 # HTML5 Shell
@@ -113,7 +124,10 @@ chess_project/
     ├── verify-day3.sh             # Automated Day 3 PL/pgSQL & GiST constraint seal script
     ├── verify-day4.sh             # Automated Day 4 Canonical Deduplication seal script
     ├── verify-day5.sh             # Automated Day 5 Stockfish Pool seal script
-    └── verify-day6.sh             # Automated Day 6 Polarity Inversion & Eval Math seal script
+    ├── verify-day6.sh             # Automated Day 6 Polarity Inversion & Eval Math seal script
+    ├── verify-day7.sh             # Automated Day 7 FIFO Queue Claim CTE seal script
+    ├── verify-day8.sh             # Automated Day 8 Heartbeat Watchdog & SIGKILL seal script
+    └── verify-day9.sh             # Automated Day 9 Stale Job Recovery & Scheduler seal script
 ```
 
 ---
@@ -170,6 +184,15 @@ npm run verify:day5
 
 # Day 6 Engine Evaluation Polarity Inversion & Continuous Mate Math Verification
 npm run verify:day6
+
+# Day 7 FIFO Queue Claim CTE & Lifecycle Verification
+npm run verify:day7
+
+# Day 8 Heartbeat Watchdog & SIGKILL Circuit Breaker Verification
+npm run verify:day8
+
+# Day 9 Stale Job Recovery Sweep & Scheduler Verification
+npm run verify:day9
 ```
 
 ### 5. Launch Full Stack (Server + Client)

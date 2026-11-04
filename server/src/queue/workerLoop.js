@@ -32,7 +32,12 @@ const logger = require("../utils/logger");
  * @param {() => number} [randomFn=Math.random] - RNG function
  * @returns {number} Sleep time in milliseconds
  */
-function calculateBackoffSleep(consecutiveEmpty, baseMs = 200, maxMs = 5000, randomFn = Math.random) {
+function calculateBackoffSleep(
+  consecutiveEmpty,
+  baseMs = 200,
+  maxMs = 5000,
+  randomFn = Math.random,
+) {
   const cappedMs = Math.min(maxMs, baseMs * Math.pow(2, consecutiveEmpty));
   const jitterMultiplier = 0.5 + randomFn(); // Uniform(0.5, 1.5)
   return Math.floor(cappedMs * jitterMultiplier);
@@ -203,14 +208,20 @@ async function processJob(pool, job, stockfishPool, options = {}) {
         rawEvalType: playedEval.score.type,
         rawEvalValue: playedEval.score.value,
         evalCentipawns: playedMover.centipawns,
-        evalMate: playedEval.score.type === "mate" ? playedEval.score.value : null,
+        evalMate:
+          playedEval.score.type === "mate" ? playedEval.score.value : null,
         cplRaw: classification.cplRaw,
         cplCapped: classification.cplCapped,
         winProbability: winProb,
         winProbDelta: classification.winProbDelta,
         bestMoveUci: bestEval.bestMove || null,
         mistakeType: classification.mistakeType,
-        gamePhase: plyNumber <= 20 ? "OPENING" : plyNumber <= 60 ? "MIDDLEGAME" : "ENDGAME",
+        gamePhase:
+          plyNumber <= 20
+            ? "OPENING"
+            : plyNumber <= 60
+              ? "MIDDLEGAME"
+              : "ENDGAME",
         pvLine: playedEval.pv || [],
         isBookMove,
       });
@@ -221,8 +232,10 @@ async function processJob(pool, job, stockfishPool, options = {}) {
 
     // 5. Ingest Batch into 6NF Tables via sp_ingest_game_analysis_6nf
     const analysisId = crypto.randomUUID();
-    const whiteAcpl = whiteCount > 0 ? Math.round(whiteTotalCpl / whiteCount) : 0;
-    const blackAcpl = blackCount > 0 ? Math.round(blackTotalCpl / blackCount) : 0;
+    const whiteAcpl =
+      whiteCount > 0 ? Math.round(whiteTotalCpl / whiteCount) : 0;
+    const blackAcpl =
+      blackCount > 0 ? Math.round(blackTotalCpl / blackCount) : 0;
 
     await ingestGameAnalysis6NF(pool, {
       analysisId,
@@ -263,7 +276,10 @@ async function processJob(pool, job, stockfishPool, options = {}) {
       try {
         await failJob(pool, jobId, claimToken, err.message);
       } catch (failErr) {
-        logger.error({ jobId, failErr: failErr.message }, "Failed to record job failure in DB");
+        logger.error(
+          { jobId, failErr: failErr.message },
+          "Failed to record job failure in DB",
+        );
       }
     }
 
@@ -273,7 +289,10 @@ async function processJob(pool, job, stockfishPool, options = {}) {
       try {
         await stockfishPool.release(worker);
       } catch (relErr) {
-        logger.warn({ err: relErr.message }, "Error releasing worker back to pool");
+        logger.warn(
+          { err: relErr.message },
+          "Error releasing worker back to pool",
+        );
       }
     }
   }
@@ -301,7 +320,10 @@ async function runWorkerLoop(pool, workerId, stockfishPool, options = {}) {
       consecutiveEmpty = 0;
     });
   } catch (listenErr) {
-    logger.warn({ err: listenErr.message }, "Could not attach dedicated LISTEN client; falling back to polling");
+    logger.warn(
+      { err: listenErr.message },
+      "Could not attach dedicated LISTEN client; falling back to polling",
+    );
   }
 
   const loopPromise = (async () => {
@@ -313,12 +335,19 @@ async function runWorkerLoop(pool, workerId, stockfishPool, options = {}) {
           await processJob(pool, job, stockfishPool, options);
         } else {
           consecutiveEmpty++;
-          const sleepMs = calculateBackoffSleep(consecutiveEmpty, baseMs, maxMs);
+          const sleepMs = calculateBackoffSleep(
+            consecutiveEmpty,
+            baseMs,
+            maxMs,
+          );
           await new Promise((resolve) => setTimeout(resolve, sleepMs));
         }
       } catch (err) {
         if (err.message !== "STALE_LEASE_EVICTION") {
-          logger.error({ err: err.message, workerId }, "Unhandled error in worker loop iteration");
+          logger.error(
+            { err: err.message, workerId },
+            "Unhandled error in worker loop iteration",
+          );
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
@@ -341,4 +370,3 @@ module.exports = {
   processJob,
   runWorkerLoop,
 };
-

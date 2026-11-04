@@ -37,12 +37,17 @@ async function sweepStaleJobs(pool, timeoutInterval = "2 minutes") {
         "Stale job recovery sweep completed — reclaimed abandoned jobs",
       );
     } else {
-      logger.trace("Stale job recovery sweep completed — zero stale jobs found");
+      logger.trace(
+        "Stale job recovery sweep completed — zero stale jobs found",
+      );
     }
 
     return swept;
   } catch (err) {
-    logger.error({ err: err.message }, "Error executing stale job recovery sweep");
+    logger.error(
+      { err: err.message },
+      "Error executing stale job recovery sweep",
+    );
     throw err;
   }
 }
@@ -82,7 +87,10 @@ class StaleRecoveryScheduler {
           this.onSweep(swept);
         }
       } catch (err) {
-        logger.error({ err: err.message }, "Stale recovery scheduler iteration failed");
+        logger.error(
+          { err: err.message },
+          "Stale recovery scheduler iteration failed",
+        );
       }
     }, this.intervalMs);
 
@@ -125,4 +133,3 @@ module.exports = {
   sweepStaleJobs,
   StaleRecoveryScheduler,
 };
-

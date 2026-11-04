@@ -50,7 +50,13 @@ const UPDATE_CURRENT_PLY_QUERY = `
  * @returns {Promise<{ ok: boolean, rowCount: number }>}
  * @throws {Error} STALE_LEASE_EVICTION if rowCount === 0
  */
-async function sendHeartbeat(pool, jobId, claimToken, currentPly = 0, stockfishProcess = null) {
+async function sendHeartbeat(
+  pool,
+  jobId,
+  claimToken,
+  currentPly = 0,
+  stockfishProcess = null,
+) {
   const result = await pool.query(HEARTBEAT_QUERY, [jobId, claimToken]);
 
   // CIRCUIT BREAKER TRIP: result.rowCount === 0
@@ -72,7 +78,10 @@ async function sendHeartbeat(pool, jobId, claimToken, currentPly = 0, stockfishP
     try {
       await pool.query(UPDATE_CURRENT_PLY_QUERY, [jobId, currentPly]);
     } catch (plyErr) {
-      logger.warn({ jobId, plyErr: plyErr.message }, "Failed to update job_current_plies");
+      logger.warn(
+        { jobId, plyErr: plyErr.message },
+        "Failed to update job_current_plies",
+      );
     }
   }
 
@@ -94,7 +103,10 @@ function terminateStockfishWithSigkill(target) {
       target.process.kill("SIGKILL");
     }
   } catch (killErr) {
-    logger.error({ err: killErr.message }, "Failed to issue SIGKILL on Stockfish process");
+    logger.error(
+      { err: killErr.message },
+      "Failed to issue SIGKILL on Stockfish process",
+    );
   }
 }
 
@@ -202,4 +214,3 @@ module.exports = {
   terminateStockfishWithSigkill,
   HeartbeatWatchdog,
 };
-

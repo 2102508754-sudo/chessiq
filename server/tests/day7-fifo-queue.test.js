@@ -37,7 +37,9 @@ describe("Day 7: PostgreSQL FIFO Queue Claim CTE & Concurrency Lifecycle (@BE)",
       expect(FIFO_CLAIM_CTE_QUERY).toContain("INNER JOIN job_games jg");
       expect(FIFO_CLAIM_CTE_QUERY).toContain("INNER JOIN job_statuses js");
       expect(FIFO_CLAIM_CTE_QUERY).toContain("INNER JOIN job_created_at jca");
-      expect(FIFO_CLAIM_CTE_QUERY).toContain("LEFT JOIN job_attempt_counts jac");
+      expect(FIFO_CLAIM_CTE_QUERY).toContain(
+        "LEFT JOIN job_attempt_counts jac",
+      );
       expect(FIFO_CLAIM_CTE_QUERY).toContain("LEFT JOIN job_max_retries jmr");
       expect(FIFO_CLAIM_CTE_QUERY).toContain("LEFT JOIN job_total_plies jtp");
     });
@@ -56,9 +58,9 @@ describe("Day 7: PostgreSQL FIFO Queue Claim CTE & Concurrency Lifecycle (@BE)",
       const sleep2 = calculateBackoffSleep(2, 200, 5000, mockRng);
       const sleep3 = calculateBackoffSleep(3, 200, 5000, mockRng);
 
-      expect(sleep0).toBe(200);  // 200 * 2^0 * 1.0 = 200
-      expect(sleep1).toBe(400);  // 200 * 2^1 * 1.0 = 400
-      expect(sleep2).toBe(800);  // 200 * 2^2 * 1.0 = 800
+      expect(sleep0).toBe(200); // 200 * 2^0 * 1.0 = 200
+      expect(sleep1).toBe(400); // 200 * 2^1 * 1.0 = 400
+      expect(sleep2).toBe(800); // 200 * 2^2 * 1.0 = 800
       expect(sleep3).toBe(1600); // 200 * 2^3 * 1.0 = 1600
     });
 
@@ -212,4 +214,3 @@ describe("Day 7: PostgreSQL FIFO Queue Claim CTE & Concurrency Lifecycle (@BE)",
     });
   });
 });
-

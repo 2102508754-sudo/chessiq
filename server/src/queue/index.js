@@ -18,10 +18,7 @@ const {
   HeartbeatWatchdog,
 } = require("./heartbeat");
 
-const {
-  sweepStaleJobs,
-  StaleRecoveryScheduler,
-} = require("./staleRecovery");
+const { sweepStaleJobs, StaleRecoveryScheduler } = require("./staleRecovery");
 
 const {
   calculateBackoffSleep,
@@ -50,4 +47,3 @@ module.exports = {
   sweepStaleJobs,
   StaleRecoveryScheduler,
 };
-

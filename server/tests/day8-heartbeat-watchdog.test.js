@@ -34,8 +34,12 @@ describe("Day 8: Watchdog Heartbeat & rowCount === 0 SIGKILL Circuit Breaker (@B
     });
 
     it("updates job_current_plies on a separate non-blocking table", () => {
-      expect(UPDATE_CURRENT_PLY_QUERY).toMatch(/INSERT INTO\s+job_current_plies/i);
-      expect(UPDATE_CURRENT_PLY_QUERY).toContain("ON CONFLICT (job_id) DO UPDATE");
+      expect(UPDATE_CURRENT_PLY_QUERY).toMatch(
+        /INSERT INTO\s+job_current_plies/i,
+      );
+      expect(UPDATE_CURRENT_PLY_QUERY).toContain(
+        "ON CONFLICT (job_id) DO UPDATE",
+      );
     });
   });
 
@@ -68,16 +72,28 @@ describe("Day 8: Watchdog Heartbeat & rowCount === 0 SIGKILL Circuit Breaker (@B
       const jobId = "job-valid-1";
       const claimToken = "token-valid-1";
 
-      const res = await sendHeartbeat(mockPool, jobId, claimToken, 12, mockStockfish);
+      const res = await sendHeartbeat(
+        mockPool,
+        jobId,
+        claimToken,
+        12,
+        mockStockfish,
+      );
 
       expect(res.ok).toBe(true);
       expect(res.rowCount).toBe(1);
 
       // Verify heartbeat query executed with parameters
-      expect(mockPool.query).toHaveBeenCalledWith(HEARTBEAT_QUERY, [jobId, claimToken]);
+      expect(mockPool.query).toHaveBeenCalledWith(HEARTBEAT_QUERY, [
+        jobId,
+        claimToken,
+      ]);
 
       // Verify current_plies update executed
-      expect(mockPool.query).toHaveBeenCalledWith(UPDATE_CURRENT_PLY_QUERY, [jobId, 12]);
+      expect(mockPool.query).toHaveBeenCalledWith(UPDATE_CURRENT_PLY_QUERY, [
+        jobId,
+        12,
+      ]);
 
       // Stockfish must NOT be killed
       expect(mockStockfish.kill).not.toHaveBeenCalled();
@@ -234,4 +250,3 @@ describe("Day 8: Watchdog Heartbeat & rowCount === 0 SIGKILL Circuit Breaker (@B
     });
   });
 });
-

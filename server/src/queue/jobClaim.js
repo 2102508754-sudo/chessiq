@@ -153,7 +153,13 @@ async function claimNextJob(pool, workerId = `worker-${process.pid}`) {
     await client.query("COMMIT");
 
     logger.info(
-      { jobId, gameId: job.game_id, claimToken, attemptCount: nextAttempt, workerId },
+      {
+        jobId,
+        gameId: job.game_id,
+        claimToken,
+        attemptCount: nextAttempt,
+        workerId,
+      },
       "Successfully claimed analysis job via FIFO CTE",
     );
 
@@ -166,7 +172,10 @@ async function claimNextJob(pool, workerId = `worker-${process.pid}`) {
     };
   } catch (err) {
     await client.query("ROLLBACK");
-    logger.error({ err: err.message, workerId }, "Failed to claim next job from queue");
+    logger.error(
+      { err: err.message, workerId },
+      "Failed to claim next job from queue",
+    );
     throw err;
   } finally {
     client.release();
@@ -228,16 +237,24 @@ async function completeJob(pool, jobId, claimToken) {
     );
 
     // Release fencing lease
-    await client.query("DELETE FROM job_claim_tokens WHERE job_id = $1;", [jobId]);
+    await client.query("DELETE FROM job_claim_tokens WHERE job_id = $1;", [
+      jobId,
+    ]);
     await client.query("DELETE FROM job_locked_by WHERE job_id = $1;", [jobId]);
     await client.query("DELETE FROM job_locked_at WHERE job_id = $1;", [jobId]);
 
     await client.query("COMMIT");
 
-    logger.info({ jobId, claimToken }, "Analysis job marked completed successfully");
+    logger.info(
+      { jobId, claimToken },
+      "Analysis job marked completed successfully",
+    );
   } catch (err) {
     await client.query("ROLLBACK");
-    logger.error({ err: err.message, jobId }, "Failed to complete analysis job");
+    logger.error(
+      { err: err.message, jobId },
+      "Failed to complete analysis job",
+    );
     throw err;
   } finally {
     if (shouldRelease) client.release();
@@ -298,13 +315,18 @@ async function failJob(pool, jobId, claimToken, errorMessage) {
     );
 
     // Release fencing lease
-    await client.query("DELETE FROM job_claim_tokens WHERE job_id = $1;", [jobId]);
+    await client.query("DELETE FROM job_claim_tokens WHERE job_id = $1;", [
+      jobId,
+    ]);
     await client.query("DELETE FROM job_locked_by WHERE job_id = $1;", [jobId]);
     await client.query("DELETE FROM job_locked_at WHERE job_id = $1;", [jobId]);
 
     await client.query("COMMIT");
 
-    logger.warn({ jobId, claimToken, errorMessage }, "Analysis job marked failed");
+    logger.warn(
+      { jobId, claimToken, errorMessage },
+      "Analysis job marked failed",
+    );
   } catch (err) {
     await client.query("ROLLBACK");
     logger.error({ err: err.message, jobId }, "Failed to fail analysis job");
@@ -320,4 +342,3 @@ module.exports = {
   completeJob,
   failJob,
 };
-
