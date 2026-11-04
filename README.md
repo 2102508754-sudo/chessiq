@@ -191,9 +191,9 @@ npm run dev
 - [x] **Day 4: Canonical Move Deduplication (`user_game_move_signatures`) & PGN Ingestion Gateway (`@BE`)**
 - [x] **Day 5: Stockfish NNUE Child Process Worker Pool & Memory Isolation (`@BE`)**
 - [x] **Day 6: Engine Evaluation Polarity Inversion & Continuous Mate Mapping Mathematics (`@BE`)**
-- [ ] **Day 7:** PostgreSQL FIFO Queue Claim CTE (`SKIP LOCKED`) & Reactive `LISTEN/NOTIFY` (`@BE`)
-- [ ] **Day 8:** Watchdog Heartbeat & `rowCount === 0` `SIGKILL` Circuit Breaker (`@BE`)
-- [ ] **Day 9:** Stale Job Recovery Sweep (`fn_sweep_stale_jobs`) & Fencing Token Management (`@BE`)
+- [x] **Day 7: PostgreSQL FIFO Queue Claim CTE (`SKIP LOCKED`) & Reactive `LISTEN/NOTIFY` (`@BE`)**
+- [x] **Day 8: Watchdog Heartbeat & `rowCount === 0` `SIGKILL` Circuit Breaker (`@BE`)**
+- [x] **Day 9: Stale Job Recovery Sweep (`fn_sweep_stale_jobs`) & Fencing Token Management (`@BE`)**
 - [ ] **Day 10:** Opening Book Catalog Verification (`chess_openings`) & ACPL Exclusions (`@DB` / `@BE`)
 - [ ] **Day 11:** Interactive Chessboard UI (`react-chessboard`) & Dynamic Board Flipping (`@FE`)
 - [ ] **Day 12:** Real-Time Analysis Polling & Longitudinal Progress Indicators (`@FE`)
