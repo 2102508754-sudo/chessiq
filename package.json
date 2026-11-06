@@ -31,7 +31,8 @@
     "verify:day6": "bash scripts/verify-day6.sh",
     "verify:day7": "bash scripts/verify-day7.sh",
     "verify:day8": "bash scripts/verify-day8.sh",
-    "verify:day9": "bash scripts/verify-day9.sh"
+    "verify:day9": "bash scripts/verify-day9.sh",
+    "verify:day11": "bash scripts/verify-day11.sh"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

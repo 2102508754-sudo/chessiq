@@ -13,7 +13,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Chess } from "chess.js";
-import { Chessboard } from "react-chessboard";
+import InteractiveChessboard from "./components/InteractiveChessboard";
 import {
   Swords,
   RotateCcw,
@@ -51,6 +51,8 @@ export default function App() {
   const [currentPlyIndex, setCurrentPlyIndex] = useState(0);
   const [boardOrientation, setBoardOrientation] = useState("white");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showEngineArrow, setShowEngineArrow] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [customPgnInput, setCustomPgnInput] = useState("");
 
   // Backend Health Telemetry (Background connection status)
@@ -160,22 +162,94 @@ export default function App() {
   }, [isPlaying, gameMoves.length]);
 
   // Navigation handlers
-  const goToStart = () => {
+  const goToStart = useCallback(() => {
     setIsPlaying(false);
     setCurrentPlyIndex(0);
-  };
-  const goToEnd = () => {
+  }, []);
+
+  const goToEnd = useCallback(() => {
     setIsPlaying(false);
     setCurrentPlyIndex(gameMoves.length);
-  };
-  const stepBack = () => {
+  }, [gameMoves.length]);
+
+  const stepBack = useCallback(() => {
     setIsPlaying(false);
     setCurrentPlyIndex((prev) => Math.max(0, prev - 1));
-  };
-  const stepForward = () => {
+  }, []);
+
+  const stepForward = useCallback(() => {
     setIsPlaying(false);
     setCurrentPlyIndex((prev) => Math.min(gameMoves.length, prev + 1));
-  };
+  }, [gameMoves.length]);
+
+  // Day 11: Interactive Move Playback & User Move Matching
+  const handleMovePlayed = useCallback(
+    (move) => {
+      if (currentPlyIndex < gameMoves.length) {
+        const nextMove = gameMoves[currentPlyIndex];
+        if (
+          nextMove &&
+          (nextMove.san === move.san ||
+            nextMove.uci === move.from + move.to + (move.promotion || ""))
+        ) {
+          setCurrentPlyIndex((prev) => prev + 1);
+          return true;
+        }
+      }
+      return false;
+    },
+    [currentPlyIndex, gameMoves]
+  );
+
+  // Day 11: Global Keyboard Shortcuts Navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          stepBack();
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          stepForward();
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          goToStart();
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          goToEnd();
+          break;
+        case " ":
+          e.preventDefault();
+          setIsPlaying((p) => !p);
+          break;
+        case "f":
+        case "F":
+          e.preventDefault();
+          setBoardOrientation((o) => (o === "white" ? "black" : "white"));
+          break;
+        case "a":
+        case "A":
+          e.preventDefault();
+          setShowEngineArrow((prev) => !prev);
+          break;
+        case "m":
+        case "M":
+          e.preventDefault();
+          setIsSoundEnabled((prev) => !prev);
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [stepBack, stepForward, goToStart, goToEnd]);
 
   // Move Classification Badge Renderer (Chess.com Style)
   const renderClassificationBadge = (classification) => {
@@ -751,73 +825,20 @@ export default function App() {
                 </div>
               </div>
 
-              {/* CHESSBOARD WITH ACCURATE EVALUATION BAR */}
-              <div
-                className="glass-panel"
-                style={{
-                  padding: "16px",
-                  display: "flex",
-                  gap: "14px",
-                  alignItems: "stretch",
-                }}
-              >
-                {/* Chess.com Style Eval Bar */}
-                <div
-                  style={{
-                    width: "30px",
-                    background: "#1e293b",
-                    borderRadius: "6px",
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-end",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    position: "relative",
-                  }}
-                  title={`Evaluation: ${advantage.scoreStr} pawns`}
-                >
-                  {/* Fill representing White's side */}
-                  <div
-                    style={{
-                      width: "100%",
-                      height: `${evalBarPercent}%`,
-                      background: "#f8fafc",
-                      transition: "height 0.3s ease",
-                    }}
-                  />
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: evalBarPercent > 50 ? "8px" : "auto",
-                      top: evalBarPercent <= 50 ? "8px" : "auto",
-                      left: 0,
-                      right: 0,
-                      textAlign: "center",
-                      fontSize: "10px",
-                      fontFamily: "var(--font-mono)",
-                      color: evalBarPercent > 50 ? "#0f172a" : "#94a3b8",
-                      fontWeight: "800",
-                    }}
-                  >
-                    {advantage.scoreStr}
-                  </span>
-                </div>
-
-                {/* Interactive Board */}
-                <div style={{ flex: 1, maxWidth: "510px" }}>
-                  <Chessboard
-                    position={currentFen}
-                    boardOrientation={boardOrientation}
-                    customBoardStyle={{
-                      borderRadius: "8px",
-                      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
-                    }}
-                    customDarkSquareStyle={{ backgroundColor: "#779556" }}
-                    customLightSquareStyle={{ backgroundColor: "#eaebd0" }}
-                    arePiecesDraggable={false}
-                  />
-                </div>
-              </div>
+              {/* DAY 11: INTERACTIVE CHESSBOARD & DYNAMIC BOARD FLIPPING */}
+              <InteractiveChessboard
+                position={currentFen}
+                currentMove={currentMove}
+                boardOrientation={boardOrientation}
+                onOrientationChange={setBoardOrientation}
+                evalBarPercent={evalBarPercent}
+                advantage={advantage}
+                onMovePlayed={handleMovePlayed}
+                showEngineArrow={showEngineArrow}
+                onToggleEngineArrow={() => setShowEngineArrow((prev) => !prev)}
+                isSoundEnabled={isSoundEnabled}
+                onToggleSound={() => setIsSoundEnabled((prev) => !prev)}
+              />
 
               {/* BOARD PLAYBACK CONTROLS */}
               <div

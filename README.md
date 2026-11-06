@@ -193,6 +193,9 @@ npm run verify:day8
 
 # Day 9 Stale Job Recovery Sweep & Scheduler Verification
 npm run verify:day9
+
+# Day 11 Interactive Chessboard UI & Dynamic Board Flipping Verification
+npm run verify:day11
 ```
 
 ### 5. Launch Full Stack (Server + Client)
@@ -218,7 +221,7 @@ npm run dev
 - [x] **Day 8: Watchdog Heartbeat & `rowCount === 0` `SIGKILL` Circuit Breaker (`@BE`)**
 - [x] **Day 9: Stale Job Recovery Sweep (`fn_sweep_stale_jobs`) & Fencing Token Management (`@BE`)**
 - [ ] **Day 10:** Opening Book Catalog Verification (`chess_openings`) & ACPL Exclusions (`@DB` / `@BE`)
-- [ ] **Day 11:** Interactive Chessboard UI (`react-chessboard`) & Dynamic Board Flipping (`@FE`)
+- [x] **Day 11: Interactive Chessboard UI (`react-chessboard`) & Dynamic Board Flipping (`@FE`)**
 - [ ] **Day 12:** Real-Time Analysis Polling & Longitudinal Progress Indicators (`@FE`)
 - [ ] **Day 13:** Tactical Blunder Classification Tiers & Move Evaluation Navigation (`@FE`)
 - [ ] **Day 14:** Longitudinal Analytics Dashboard & Phase-Based CPL Radar Visualizations (`@FE`)
