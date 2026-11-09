@@ -22,6 +22,11 @@ const {
   winProbability,
   mateToCentipawns,
 } = require("../engine/evalMath");
+const {
+  matchOpeningByMoves,
+  isBookMove: isCatalogBookMove,
+  linkGameEco,
+} = require("../db/openings");
 const logger = require("../utils/logger");
 
 /**
@@ -90,6 +95,20 @@ async function processJob(pool, job, stockfishPool, options = {}) {
     const parsed = parsePgn(game.pgn_raw);
     const moves = parsed.moves;
 
+    // Resolve authoritative ECO opening and link game_ecos relation (6NF)
+    try {
+      const allSanMoves = moves.map((m) => m.san);
+      const openingMatch = await matchOpeningByMoves(pool, allSanMoves);
+      if (openingMatch && openingMatch.ecoCode) {
+        await linkGameEco(pool, gameId, openingMatch.ecoCode);
+      }
+    } catch (ecoErr) {
+      logger.warn(
+        { gameId, err: ecoErr.message },
+        "Could not resolve game ECO opening",
+      );
+    }
+
     // 2. Acquire Stockfish Worker from Pool
     worker = await stockfishPool.acquire();
 
@@ -149,17 +168,11 @@ async function processJob(pool, job, stockfishPool, options = {}) {
         throw evalErr;
       }
 
-      // Check opening book match in catalog if requested
+      // Check authoritative opening book match in catalog (FR-07, §11.5)
       let isBookMove = false;
       try {
-        const bookCheck = await pool.query(
-          `SELECT 1 FROM chess_openings co
-           JOIN chess_opening_pgn_moves cop ON co.eco_code = cop.eco_code
-           WHERE cop.pgn_moves LIKE $1
-           LIMIT 1;`,
-          [`%${moveData.san}%`],
-        );
-        isBookMove = bookCheck.rows.length > 0;
+        const movesSoFar = moves.slice(0, plyNumber).map((m) => m.san);
+        isBookMove = await isCatalogBookMove(pool, movesSoFar);
       } catch (_) {
         isBookMove = false;
       }

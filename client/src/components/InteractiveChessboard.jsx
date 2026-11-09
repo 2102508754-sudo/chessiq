@@ -61,7 +61,10 @@ export function parseMoveToSquares(moveStr, fen) {
 
   // Case 1: UCI string (e.g. "e2e4" or "e7e8q")
   if (/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(moveStr)) {
-    return [moveStr.slice(0, 2).toLowerCase(), moveStr.slice(2, 4).toLowerCase()];
+    return [
+      moveStr.slice(0, 2).toLowerCase(),
+      moveStr.slice(2, 4).toLowerCase(),
+    ];
   }
 
   // Case 2: SAN string (e.g. "25... Re8", "Nxe4", "e4", "O-O")
@@ -218,7 +221,10 @@ export default function InteractiveChessboard({
 
     // If game review provides a recommended bestMove
     if (currentMove?.bestMove) {
-      const squares = parseMoveToSquares(currentMove.bestMove, currentMove.fenBefore || position);
+      const squares = parseMoveToSquares(
+        currentMove.bestMove,
+        currentMove.fenBefore || position,
+      );
       if (squares) {
         arrows.push([squares[0], squares[1], "rgb(56, 189, 248)"]); // Bright Cyan
       }
@@ -227,10 +233,15 @@ export default function InteractiveChessboard({
     // If the move was a blunder/mistake, optionally add a threat indicator
     if (
       currentMove &&
-      (currentMove.classification === "BLUNDER" || currentMove.classification === "MISTAKE") &&
+      (currentMove.classification === "BLUNDER" ||
+        currentMove.classification === "MISTAKE") &&
       lastMoveSquares
     ) {
-      arrows.push([lastMoveSquares.from, lastMoveSquares.to, "rgba(244, 63, 94, 0.75)"]); // Rose Red
+      arrows.push([
+        lastMoveSquares.from,
+        lastMoveSquares.to,
+        "rgba(244, 63, 94, 0.75)",
+      ]); // Rose Red
     }
 
     return arrows;
@@ -244,13 +255,16 @@ export default function InteractiveChessboard({
         chessAudio.playCheck();
       } else if (moveResult.captured) {
         chessAudio.playCapture();
-      } else if (moveResult.flags.includes("k") || moveResult.flags.includes("q")) {
+      } else if (
+        moveResult.flags.includes("k") ||
+        moveResult.flags.includes("q")
+      ) {
         chessAudio.playCastle();
       } else {
         chessAudio.playMove();
       }
     },
-    [isSoundEnabled]
+    [isSoundEnabled],
   );
 
   // Handle Piece Drop (Drag & Drop)
@@ -301,7 +315,7 @@ export default function InteractiveChessboard({
         return false;
       }
     },
-    [activeFen, explorationMoves, triggerMoveSound, onMovePlayed]
+    [activeFen, explorationMoves, triggerMoveSound, onMovePlayed],
   );
 
   // Handle Square Click (Click-to-Move)
@@ -346,7 +360,7 @@ export default function InteractiveChessboard({
         setLegalMoves(moves);
       }
     },
-    [selectedSquare, legalMoves, activeChess, handlePieceDrop]
+    [selectedSquare, legalMoves, activeChess, handlePieceDrop],
   );
 
   // Reset Exploration mode
@@ -394,7 +408,8 @@ export default function InteractiveChessboard({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            background: "linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)",
+            background:
+              "linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)",
             border: "1px solid rgba(56, 189, 248, 0.4)",
             borderRadius: "8px",
             padding: "8px 14px",
@@ -481,7 +496,8 @@ export default function InteractiveChessboard({
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
-            justifyContent: boardOrientation === "white" ? "flex-end" : "flex-start",
+            justifyContent:
+              boardOrientation === "white" ? "flex-end" : "flex-start",
             border: "1px solid rgba(255, 255, 255, 0.15)",
             position: "relative",
             boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.5)",
@@ -528,7 +544,8 @@ export default function InteractiveChessboard({
               color: evalBarPercent > 50 ? "#0f172a" : "#f8fafc",
               fontWeight: "800",
               zIndex: 4,
-              textShadow: evalBarPercent <= 50 ? "0 1px 2px rgba(0,0,0,0.8)" : "none",
+              textShadow:
+                evalBarPercent <= 50 ? "0 1px 2px rgba(0,0,0,0.8)" : "none",
             }}
           >
             {advantage.scoreStr}
@@ -645,7 +662,9 @@ export default function InteractiveChessboard({
               border: showEngineArrow
                 ? "1px solid rgba(16, 185, 129, 0.4)"
                 : "1px solid var(--border-color)",
-              color: showEngineArrow ? "var(--accent-emerald)" : "var(--text-secondary)",
+              color: showEngineArrow
+                ? "var(--accent-emerald)"
+                : "var(--text-secondary)",
               cursor: "pointer",
             }}
             title="Toggle Engine Best Move Arrow (HotKey: A)"
@@ -682,4 +701,3 @@ export default function InteractiveChessboard({
     </div>
   );
 }
-

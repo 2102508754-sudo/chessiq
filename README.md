@@ -76,7 +76,8 @@ chess_project/
 │       ├── 001_master_6nf_schema.sql     # Irreducible 6NF relations, GiST constraints & triggers
 │       ├── 002_reconstruction_views_3nf.sql # Lossless 3NF views (v_users, v_games, etc.)
 │       ├── 003_sp_ingest_game_analysis_6nf.sql # PL/pgSQL high-performance bulk ingestion
-│       └── 004_stale_job_recovery_sweep.sql # Stale worker recovery sweep & claim invalidation
+│       ├── 004_stale_job_recovery_sweep.sql # Stale worker recovery sweep & claim invalidation
+│       └── 005_seed_chess_openings_catalog.sql # 6NF opening catalog, prefix matching & ACPL exclusion
 │
 ├── server/                        # Backend API Gateway & Engine Worker
 │   ├── Dockerfile                 # Multi-stage container with Stockfish NNUE
@@ -84,8 +85,10 @@ chess_project/
 │   │   ├── app.js                 # Express security gateway & /api/health
 │   │   ├── index.js               # HTTP entrypoint & graceful teardown
 │   │   ├── config/env.js          # Zod runtime environment validator
-│   │   ├── db/pool.js             # pg.Pool singleton & LISTEN client
-│   │   ├── db/migrate.js          # SHA-256 verified migration engine
+│   │   ├── db/
+│   │   │   ├── pool.js            # pg.Pool singleton & LISTEN client
+│   │   │   ├── migrate.js         # SHA-256 verified migration engine
+│   │   │   └── openings.js        # Opening catalog matching & ACPL calculation service
 │   │   ├── routes/games.js        # Transactional PGN upload & deduplication gateway
 │   │   ├── services/pgnParser.js  # PGN parsing, FEN tracking & canonical hashing
 │   │   ├── engine/
@@ -108,7 +111,8 @@ chess_project/
 │       ├── day6-eval-math.test.js # Engine eval math & polarity inversion suite
 │       ├── day7-fifo-queue.test.js # Isolated FIFO queue claim & backoff suite
 │       ├── day8-heartbeat-watchdog.test.js # Watchdog heartbeat & SIGKILL breaker suite
-│       └── day9-stale-job-recovery.test.js # Stale job recovery sweep & token invalidation suite
+│       ├── day9-stale-job-recovery.test.js # Stale job recovery sweep & token invalidation suite
+│       └── day10-openings.test.js # Opening catalog verification & ACPL exclusion suite
 │
 ├── client/                        # Frontend Single-Domain Client
 │   ├── index.html                 # HTML5 Shell
@@ -127,7 +131,9 @@ chess_project/
     ├── verify-day6.sh             # Automated Day 6 Polarity Inversion & Eval Math seal script
     ├── verify-day7.sh             # Automated Day 7 FIFO Queue Claim CTE seal script
     ├── verify-day8.sh             # Automated Day 8 Heartbeat Watchdog & SIGKILL seal script
-    └── verify-day9.sh             # Automated Day 9 Stale Job Recovery & Scheduler seal script
+    ├── verify-day9.sh             # Automated Day 9 Stale Job Recovery & Scheduler seal script
+    ├── verify-day10.sh            # Automated Day 10 Opening Book Catalog seal script
+    └── verify-day11.sh            # Automated Day 11 Interactive Chessboard UI seal script
 ```
 
 ---
@@ -194,6 +200,9 @@ npm run verify:day8
 # Day 9 Stale Job Recovery Sweep & Scheduler Verification
 npm run verify:day9
 
+# Day 10 Opening Book Catalog Verification & ACPL Exclusions
+npm run verify:day10
+
 # Day 11 Interactive Chessboard UI & Dynamic Board Flipping Verification
 npm run verify:day11
 ```
@@ -220,7 +229,7 @@ npm run dev
 - [x] **Day 7: PostgreSQL FIFO Queue Claim CTE (`SKIP LOCKED`) & Reactive `LISTEN/NOTIFY` (`@BE`)**
 - [x] **Day 8: Watchdog Heartbeat & `rowCount === 0` `SIGKILL` Circuit Breaker (`@BE`)**
 - [x] **Day 9: Stale Job Recovery Sweep (`fn_sweep_stale_jobs`) & Fencing Token Management (`@BE`)**
-- [ ] **Day 10:** Opening Book Catalog Verification (`chess_openings`) & ACPL Exclusions (`@DB` / `@BE`)
+- [x] **Day 10: Opening Book Catalog Verification (`chess_openings`) & ACPL Exclusions (`@DB` / `@BE`)**
 - [x] **Day 11: Interactive Chessboard UI (`react-chessboard`) & Dynamic Board Flipping (`@FE`)**
 - [ ] **Day 12:** Real-Time Analysis Polling & Longitudinal Progress Indicators (`@FE`)
 - [ ] **Day 13:** Tactical Blunder Classification Tiers & Move Evaluation Navigation (`@FE`)

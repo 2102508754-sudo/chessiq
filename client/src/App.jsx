@@ -198,13 +198,14 @@ export default function App() {
       }
       return false;
     },
-    [currentPlyIndex, gameMoves]
+    [currentPlyIndex, gameMoves],
   );
 
   // Day 11: Global Keyboard Shortcuts Navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+        return;
 
       switch (e.key) {
         case "ArrowLeft":

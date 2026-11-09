@@ -16,7 +16,10 @@ const { Chess } = require("chess.js");
 function parseMoveToSquares(moveStr, fen) {
   if (!moveStr || !fen) return null;
   if (/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(moveStr)) {
-    return [moveStr.slice(0, 2).toLowerCase(), moveStr.slice(2, 4).toLowerCase()];
+    return [
+      moveStr.slice(0, 2).toLowerCase(),
+      moveStr.slice(2, 4).toLowerCase(),
+    ];
   }
   try {
     const clean = moveStr.replace(/^\d+(\.{1,3})\s*/, "").trim();
@@ -199,7 +202,9 @@ describe("Day 11: Interactive Chessboard UI & Dynamic Board Flipping (@FE)", () 
 
     it("generates capture ring styling for capture moves", () => {
       // Scholar's Mate / attack position where white can capture on f7
-      const chess = new Chess("r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 4");
+      const chess = new Chess(
+        "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 4",
+      );
       const moves = chess.moves({ square: "f3", verbose: true });
       const captureF7 = moves.find((m) => m.to === "f7");
 
@@ -217,7 +222,9 @@ describe("Day 11: Interactive Chessboard UI & Dynamic Board Flipping (@FE)", () 
 
     it("highlights king in check with alert radial gradient", () => {
       // Fool's Mate checkmate position: black queen checks white king on e1
-      const chess = new Chess("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3");
+      const chess = new Chess(
+        "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",
+      );
       expect(chess.isCheck()).toBe(true);
 
       const kingSq = findCheckedKingSquare(chess);
@@ -268,7 +275,8 @@ describe("Day 11: Interactive Chessboard UI & Dynamic Board Flipping (@FE)", () 
     });
 
     it("parses SAN black reply with move prefix (e.g. '1... c5')", () => {
-      const fenAfterE4 = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+      const fenAfterE4 =
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
       const squares = parseMoveToSquares("1... c5", fenAfterE4);
       expect(squares).toEqual(["c7", "c5"]);
     });

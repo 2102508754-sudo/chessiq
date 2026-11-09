@@ -147,4 +147,3 @@ class ChessAudioEngine {
 }
 
 export const chessAudio = new ChessAudioEngine();
-
