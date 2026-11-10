@@ -181,6 +181,16 @@ app.get("/api/health", async (req, res, next) => {
 const gamesRouter = require("./routes/games");
 app.use("/api/games", gamesRouter);
 
+// Day 12 & 14 API Route Aliases per System Design §8.1
+app.use("/api/jobs", (req, res, next) => {
+  req.url = "/jobs" + req.url;
+  gamesRouter(req, res, next);
+});
+app.use("/api/analytics", (req, res, next) => {
+  req.url = "/analytics" + req.url;
+  gamesRouter(req, res, next);
+});
+
 // 10. 404 Route Fallback
 app.use((req, res, next) => {
   next(AppError.notFound(`Route not found: ${req.method} ${req.originalUrl}`));

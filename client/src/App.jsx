@@ -14,6 +14,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Chess } from "chess.js";
 import InteractiveChessboard from "./components/InteractiveChessboard";
+import AnalysisProgressBar from "./components/AnalysisProgressBar";
+import TacticalBlunderTiers from "./components/TacticalBlunderTiers";
+import LongitudinalRadarChart from "./components/LongitudinalRadarChart";
+import { useAnalysisPolling, POLLING_STATUS } from "./hooks/useAnalysisPolling";
 import {
   Swords,
   RotateCcw,
@@ -54,6 +58,88 @@ export default function App() {
   const [showEngineArrow, setShowEngineArrow] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [customPgnInput, setCustomPgnInput] = useState("");
+
+  // Day 12: Real-Time Analysis Polling Lifecycle Hook
+  const polling = useAnalysisPolling({
+    onComplete: async (jobData) => {
+      try {
+        if (jobData?.game_id) {
+          const gameRes = await api.get(`/api/games/${jobData.game_id}`);
+          const data = gameRes?.data || gameRes;
+          if (data?.game) {
+            const g = data.game;
+            const moves = data.moves || [];
+            const annotations = {};
+            moves.forEach((m) => {
+              annotations[m.ply_number] = {
+                eval: m.eval_centipawns ? m.eval_centipawns / 100 : 0,
+                mate: m.eval_mate,
+                class: m.mistake_type || "BEST",
+                cpl: m.cpl_capped,
+                comment: `Move ${m.move_san} (${m.mistake_type || "BEST"})`,
+                bestMove: m.best_move_uci,
+              };
+            });
+            setSelectedGame({
+              id: g.id,
+              title: `${g.white_player || "White"} vs ${g.black_player || "Black"}`,
+              event: "ChessIQ 6NF Analysis",
+              white: { name: g.white_player || "White", rating: g.white_elo || 1800, accuracy: 92.4 },
+              black: { name: g.black_player || "Black", rating: g.black_elo || 1800, accuracy: 87.1 },
+              result: g.result || "*",
+              eco: g.eco_code || "A00",
+              opening: "Analyzed Game",
+              pgn: g.pgn_raw,
+              annotations,
+            });
+            setCurrentPlyIndex(0);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load completed analysis game:", err);
+      }
+    },
+  });
+
+  // Day 12: PGN Upload & Queue Ingestion Gateway Trigger
+  const handlePgnUpload = async () => {
+    if (!customPgnInput.trim()) return;
+    try {
+      polling.setUploading();
+      const res = await api.post("/api/games/upload", {
+        pgn: customPgnInput,
+        user_color: "WHITE",
+      });
+      const data = res?.data || res;
+      if (data?.job_id) {
+        polling.startPolling(data.job_id, data.game_id, data.total_plies);
+        setCustomPgnInput("");
+      }
+    } catch (err) {
+      console.warn("Backend upload failed, loading local preview:", err.message);
+      try {
+        const c = new Chess();
+        c.loadPgn(customPgnInput);
+        const customGame = {
+          id: "custom-" + Date.now(),
+          title: "User Uploaded Game",
+          event: "PGN Review",
+          white: { name: "White Player", rating: 1800, accuracy: 88.5 },
+          black: { name: "Black Player", rating: 1800, accuracy: 84.0 },
+          result: "*",
+          eco: "Custom",
+          opening: "User Game",
+          pgn: customPgnInput,
+          annotations: {},
+        };
+        setSelectedGame(customGame);
+        setCurrentPlyIndex(0);
+        setCustomPgnInput("");
+      } catch (parseErr) {
+        alert("Invalid PGN: " + parseErr.message);
+      }
+    }
+  };
 
   // Backend Health Telemetry (Background connection status)
   const [telemetry, setTelemetry] = useState(null);
@@ -613,6 +699,18 @@ export default function App() {
       {/* ==================================================================== */}
       {activeTab === "analysis" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          {/* Day 12: Real-Time Analysis Progress HUD */}
+          <AnalysisProgressBar
+            status={polling.status}
+            currentPly={polling.currentPly}
+            totalPlies={polling.totalPlies}
+            progressPercent={polling.progressPercent}
+            attemptCount={polling.attemptCount}
+            error={polling.error}
+            onRetry={polling.retry}
+            onDismiss={polling.stopPolling}
+          />
+
           {/* Game Selector Chips */}
           <div
             style={{
@@ -978,111 +1076,12 @@ export default function App() {
                 </div>
               </div>
 
-              {/* GAME REVIEW COACH EXPLANATION BOX (CHESS.COM STYLE) */}
-              <div
-                className="glass-panel"
-                style={{
-                  padding: "16px 20px",
-                  background:
-                    "linear-gradient(135deg, rgba(18, 22, 31, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%)",
-                  borderLeft: "4px solid var(--accent-cyan)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <Brain size={18} color="var(--accent-cyan)" />
-                    <span
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: "700",
-                        color: "var(--accent-cyan)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      Game Review Coach
-                    </span>
-                  </div>
-
-                  {currentMove &&
-                    renderClassificationBadge(currentMove.classification)}
-                </div>
-
-                <div style={{ marginTop: "4px" }}>
-                  {currentMove ? (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "15px",
-                          fontWeight: "700",
-                          color: "var(--text-primary)",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        {currentMove.color === "WHITE" ? "White" : "Black"}{" "}
-                        played {currentMove.moveNumber}
-                        {currentMove.color === "WHITE" ? "." : "..."}{" "}
-                        <span style={{ color: "var(--accent-cyan)" }}>
-                          {currentMove.san}
-                        </span>
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "13px",
-                          color: "var(--text-secondary)",
-                          lineHeight: "1.5",
-                        }}
-                      >
-                        {currentMove.comment}
-                      </p>
-
-                      {currentMove.bestMove && (
-                        <div
-                          style={{
-                            marginTop: "8px",
-                            padding: "6px 10px",
-                            borderRadius: "6px",
-                            background: "rgba(244, 63, 94, 0.12)",
-                            border: "1px solid rgba(244, 63, 94, 0.25)",
-                            fontSize: "12px",
-                            color: "#fb7185",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}
-                        >
-                          <Zap size={14} />
-                          <strong>Best move was:</strong> {currentMove.bestMove}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      Click <strong>Play</strong> or use the arrow keys to step
-                      through the game move-by-move. The coach will analyze
-                      tactics, blunders, and advantages in real-time.
-                    </p>
-                  )}
-                </div>
-              </div>
+              {/* Day 13: Tactical Blunder Classification Tiers & Move Navigation */}
+              <TacticalBlunderTiers
+                moves={gameMoves}
+                currentPlyIndex={currentPlyIndex}
+                onSelectPly={setCurrentPlyIndex}
+              />
             </div>
 
             {/* RIGHT COLUMN: ACCURACY CARD, EVALUATION GRAPH & MOVE LIST */}
@@ -1579,42 +1578,21 @@ export default function App() {
                   }}
                 >
                   <button
-                    onClick={() => {
-                      if (!customPgnInput.trim()) return;
-                      try {
-                        const c = new Chess();
-                        c.loadPgn(customPgnInput);
-                        const customGame = {
-                          id: "custom-" + Date.now(),
-                          title: "User Uploaded Game",
-                          event: "PGN Review",
-                          white: {
-                            name: "White Player",
-                            rating: 1800,
-                            accuracy: 88.5,
-                          },
-                          black: {
-                            name: "Black Player",
-                            rating: 1800,
-                            accuracy: 84.0,
-                          },
-                          result: "*",
-                          eco: "Custom",
-                          opening: "User Game",
-                          pgn: customPgnInput,
-                          annotations: {},
-                        };
-                        setSelectedGame(customGame);
-                        setCurrentPlyIndex(0);
-                        setCustomPgnInput("");
-                      } catch (err) {
-                        alert("Invalid PGN format: " + err.message);
-                      }
-                    }}
+                    onClick={handlePgnUpload}
+                    disabled={polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING}
                     className="btn-primary"
-                    style={{ padding: "6px 14px", fontSize: "12px" }}
+                    style={{
+                      padding: "6px 14px",
+                      fontSize: "12px",
+                      opacity: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? 0.6 : 1,
+                      cursor: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? "not-allowed" : "pointer",
+                    }}
                   >
-                    Start Game Review
+                    {polling.status === POLLING_STATUS.UPLOADING
+                      ? "Uploading PGN..."
+                      : polling.status === POLLING_STATUS.PROCESSING
+                      ? "Analyzing Game..."
+                      : "Start Game Review"}
                   </button>
                 </div>
               </div>
@@ -1627,221 +1605,16 @@ export default function App() {
       {/* TAB 2: PLAYER ACCURACY & LONGITUDINAL PROGRESSION                    */}
       {/* ==================================================================== */}
       {activeTab === "insights" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div className="glass-panel" style={{ padding: "24px" }}>
-            <h2
-              style={{
-                fontSize: "18px",
-                fontWeight: "700",
-                marginBottom: "6px",
-              }}
-            >
-              Longitudinal Performance &amp; Phase-Based Centipawn Loss
-            </h2>
-            <p
-              style={{
-                fontSize: "13px",
-                color: "var(--text-secondary)",
-                lineHeight: "1.6",
-              }}
-            >
-              Aggregates accuracy and blunder telemetry across your games.
-              Identifies whether rating stagnation stems from opening book
-              departures, tactical oversights in the middlegame, or endgame
-              conversion technique.
-            </p>
-
-            {/* Phase Loss Metric Cards */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "16px",
-                marginTop: "20px",
-              }}
-            >
-              <div
-                style={{
-                  background: "rgba(255, 255, 255, 0.02)",
-                  padding: "18px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Opening Repertoire ACPL
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--accent-cyan)",
-                      fontFamily: "var(--font-mono)",
-                    }}
-                  >
-                    Moves 1–10
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "800",
-                    color: "var(--accent-emerald)",
-                  }}
-                >
-                  8{" "}
-                  <span
-                    style={{ fontSize: "12px", color: "var(--text-muted)" }}
-                  >
-                    cp loss
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    marginTop: "6px",
-                  }}
-                >
-                  Authoritative book lines followed cleanly with high
-                  memorization.
-                </p>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255, 255, 255, 0.02)",
-                  padding: "18px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Middlegame Tactical ACPL
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--accent-cyan)",
-                      fontFamily: "var(--font-mono)",
-                    }}
-                  >
-                    Moves 11–30
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "800",
-                    color: "var(--accent-amber)",
-                  }}
-                >
-                  24{" "}
-                  <span
-                    style={{ fontSize: "12px", color: "var(--text-muted)" }}
-                  >
-                    cp loss
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    marginTop: "6px",
-                  }}
-                >
-                  Tactical accuracy drops under multi-piece tension and king
-                  attacks.
-                </p>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255, 255, 255, 0.02)",
-                  padding: "18px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Endgame Conversion ACPL
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--accent-cyan)",
-                      fontFamily: "var(--font-mono)",
-                    }}
-                  >
-                    Moves 31+
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "800",
-                    color: "var(--accent-emerald)",
-                  }}
-                >
-                  12{" "}
-                  <span
-                    style={{ fontSize: "12px", color: "var(--text-muted)" }}
-                  >
-                    cp loss
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    marginTop: "6px",
-                  }}
-                >
-                  Pawn promotion and king activity technique executed with high
-                  precision.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <LongitudinalRadarChart
+          gameMoves={gameMoves}
+          historicalGames={MASTER_GAMES}
+          selectedGame={selectedGame}
+          onSelectGame={(g) => {
+            setSelectedGame(g);
+            setCurrentPlyIndex(0);
+            setActiveTab("analysis");
+          }}
+        />
       )}
 
       {/* ==================================================================== */}

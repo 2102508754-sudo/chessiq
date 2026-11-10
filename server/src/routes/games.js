@@ -298,4 +298,182 @@ router.post("/upload", async (req, res, next) => {
   }
 });
 
+/**
+ * GET /api/games/jobs/:id (or /api/jobs/:id)
+ * Day 12 (@FE/@BE): Poll analysis job progress (current_ply, total_plies, status)
+ */
+router.get("/jobs/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const jobRes = await query(
+      `SELECT * FROM v_game_analysis_jobs WHERE id::text = $1 OR game_id::text = $1 LIMIT 1;`,
+      [id],
+    );
+
+    if (jobRes.rows.length === 0) {
+      throw AppError.notFound(`Analysis job not found for identifier: ${id}`);
+    }
+
+    const job = jobRes.rows[0];
+    const currentPly = parseInt(job.current_ply || 0, 10);
+    const totalPlies = parseInt(job.total_plies || 0, 10);
+    const progressPercent =
+      totalPlies > 0 ? Math.min(100, Math.round((currentPly / totalPlies) * 100)) : 0;
+
+    let analysis = null;
+    if (job.status === "completed") {
+      const analysisRes = await query(
+        `SELECT * FROM v_game_analyses WHERE game_id = $1 LIMIT 1;`,
+        [job.game_id],
+      );
+      analysis = analysisRes.rows[0] || null;
+    }
+
+    return res.json({
+      status: "success",
+      data: {
+        job_id: job.id,
+        game_id: job.game_id,
+        status: job.status,
+        current_ply: currentPly,
+        total_plies: totalPlies,
+        progress_percent: progressPercent,
+        attempt_count: job.attempt_count,
+        max_retries: job.max_retries,
+        heartbeat_at: job.heartbeat_at,
+        last_error: job.last_error,
+        created_at: job.created_at,
+        updated_at: job.updated_at,
+        analysis,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/games/analytics/phases (and /api/analytics/phases)
+ * Day 14 (@FE/@BE): Phase-based CPL and blunder telemetry partitioned by game phase
+ */
+router.get("/analytics/phases", async (req, res, next) => {
+  try {
+    const phasesRes = await query(`
+      SELECT 
+        game_phase,
+        ROUND(AVG(cpl_capped)::numeric, 1) as avg_cpl,
+        COUNT(*) as total_moves,
+        COUNT(*) FILTER (WHERE mistake_type = 'BLUNDER') as blunder_count,
+        COUNT(*) FILTER (WHERE mistake_type = 'MISTAKE') as mistake_count,
+        COUNT(*) FILTER (WHERE mistake_type = 'INACCURACY') as inaccuracy_count,
+        COUNT(*) FILTER (WHERE mistake_type = 'BEST' OR mistake_type = 'GOOD') as accurate_count
+      FROM v_move_analyses
+      GROUP BY game_phase
+      ORDER BY 
+        CASE game_phase 
+          WHEN 'OPENING' THEN 1 
+          WHEN 'MIDDLEGAME' THEN 2 
+          WHEN 'ENDGAME' THEN 3 
+          ELSE 4 
+        END;
+    `);
+
+    return res.json({
+      status: "success",
+      data: {
+        phases: phasesRes.rows,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/games
+ * Day 14 (@FE/@BE): List paginated games for longitudinal performance tracking
+ */
+router.get("/", async (req, res, next) => {
+  try {
+    const gamesRes = await query(`
+      SELECT 
+        g.id,
+        g.white_player,
+        g.black_player,
+        g.white_elo,
+        g.black_elo,
+        g.result,
+        g.user_color,
+        g.eco_code,
+        g.played_at,
+        g.created_at,
+        ga.white_acpl,
+        ga.black_acpl,
+        ga.white_blunders,
+        ga.black_blunders,
+        ga.is_completed as analysis_completed
+      FROM v_games g
+      LEFT JOIN v_game_analyses ga ON g.id = ga.game_id
+      ORDER BY g.created_at DESC
+      LIMIT 50;
+    `);
+
+    return res.json({
+      status: "success",
+      data: {
+        games: gamesRes.rows,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/games/:id
+ * Day 12 & 13 (@FE/@BE): Retrieve single game with full 6NF move analysis tree
+ */
+router.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const gameRes = await query(
+      `SELECT * FROM v_games WHERE id::text = $1 LIMIT 1;`,
+      [id],
+    );
+
+    if (gameRes.rows.length === 0) {
+      throw AppError.notFound(`Game not found: ${id}`);
+    }
+
+    const game = gameRes.rows[0];
+
+    const analysisRes = await query(
+      `SELECT * FROM v_game_analyses WHERE game_id = $1 LIMIT 1;`,
+      [id],
+    );
+    const analysis = analysisRes.rows[0] || null;
+
+    let moves = [];
+    if (analysis) {
+      const movesRes = await query(
+        `SELECT * FROM v_move_analyses WHERE analysis_id = $1 ORDER BY ply_number ASC;`,
+        [analysis.id],
+      );
+      moves = movesRes.rows;
+    }
+
+    return res.json({
+      status: "success",
+      data: {
+        game,
+        analysis,
+        moves,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

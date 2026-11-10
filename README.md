@@ -112,14 +112,26 @@ chess_project/
 │       ├── day7-fifo-queue.test.js # Isolated FIFO queue claim & backoff suite
 │       ├── day8-heartbeat-watchdog.test.js # Watchdog heartbeat & SIGKILL breaker suite
 │       ├── day9-stale-job-recovery.test.js # Stale job recovery sweep & token invalidation suite
-│       └── day10-openings.test.js # Opening catalog verification & ACPL exclusion suite
+│       ├── day10-openings.test.js # Opening catalog verification & ACPL exclusion suite
+│       ├── day11-chessboard.test.js # Interactive Chessboard UI & dynamic board flipping suite
+│       └── day12-14-frontend-analytics.test.js # Real-time polling, blunder tiers & radar analytics suite
 │
 ├── client/                        # Frontend Single-Domain Client
 │   ├── index.html                 # HTML5 Shell
 │   ├── vite.config.js             # Local /api proxy to :5000
 │   ├── vercel.json                # Single-domain production edge rewrites
 │   └── src/
-│       ├── App.jsx                # Live diagnostic telemetry dashboard
+│       ├── App.jsx                # Live diagnostic telemetry dashboard & analysis interface
+│       ├── components/
+│       │   ├── InteractiveChessboard.jsx # react-chessboard dynamic flipping & arrows
+│       │   ├── AnalysisProgressBar.jsx  # Real-time progress HUD & lease status
+│       │   ├── TacticalBlunderTiers.jsx  # 7-tier classification badges & error navigation
+│       │   └── LongitudinalRadarChart.jsx # 5-axis SVG Spider/Radar chart & phase ACPL
+│       ├── hooks/
+│       │   └── useAnalysisPolling.js    # Adaptive interval polling lifecycle hook
+│       ├── utils/
+│       │   ├── chessAudio.js            # Synthesized Web Audio engine
+│       │   └── longitudinalAnalytics.js # Phase partitioning, ACPL & SVG polygon geometry
 │       └── api/client.js          # First-party credentials fetch wrapper
 │
 └── scripts/
@@ -133,7 +145,8 @@ chess_project/
     ├── verify-day8.sh             # Automated Day 8 Heartbeat Watchdog & SIGKILL seal script
     ├── verify-day9.sh             # Automated Day 9 Stale Job Recovery & Scheduler seal script
     ├── verify-day10.sh            # Automated Day 10 Opening Book Catalog seal script
-    └── verify-day11.sh            # Automated Day 11 Interactive Chessboard UI seal script
+    ├── verify-day11.sh            # Automated Day 11 Interactive Chessboard UI seal script
+    └── verify-day12-14.sh         # Automated Day 12-14 Telemetry, Blunder Tiers & Radar Seal Script
 ```
 
 ---
@@ -205,6 +218,9 @@ npm run verify:day10
 
 # Day 11 Interactive Chessboard UI & Dynamic Board Flipping Verification
 npm run verify:day11
+
+# Day 12–14 Real-Time Polling, Blunder Classification & Longitudinal Radar Analytics Verification
+npm run verify:day12-14
 ```
 
 ### 5. Launch Full Stack (Server + Client)
@@ -231,9 +247,9 @@ npm run dev
 - [x] **Day 9: Stale Job Recovery Sweep (`fn_sweep_stale_jobs`) & Fencing Token Management (`@BE`)**
 - [x] **Day 10: Opening Book Catalog Verification (`chess_openings`) & ACPL Exclusions (`@DB` / `@BE`)**
 - [x] **Day 11: Interactive Chessboard UI (`react-chessboard`) & Dynamic Board Flipping (`@FE`)**
-- [ ] **Day 12:** Real-Time Analysis Polling & Longitudinal Progress Indicators (`@FE`)
-- [ ] **Day 13:** Tactical Blunder Classification Tiers & Move Evaluation Navigation (`@FE`)
-- [ ] **Day 14:** Longitudinal Analytics Dashboard & Phase-Based CPL Radar Visualizations (`@FE`)
+- [x] **Day 12: Real-Time Analysis Polling & Longitudinal Progress Indicators (`@FE`)**
+- [x] **Day 13: Tactical Blunder Classification Tiers & Move Evaluation Navigation (`@FE`)**
+- [x] **Day 14: Longitudinal Analytics Dashboard & Phase-Based CPL Radar Visualizations (`@FE`)**
 - [ ] **Day 15:** Personalized Training Puzzle Generator (`v_training_puzzles`) (`@DB` / `@FE`)
 - [ ] **Day 16:** Single-Domain Authentication & First-Party Cookie Integration (`@BE` / `@FE`)
 - [ ] **Day 17:** End-to-End Concurrency & Fault-Injection Stress Testing (Chaos Verification)
