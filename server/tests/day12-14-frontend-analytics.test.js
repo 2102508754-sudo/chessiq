@@ -96,7 +96,10 @@ function calculatePhaseAnalytics(moves = [], filterColor = "ALL") {
     const p = phases[key];
     const ratedMoves = p.movesCount - p.bookMovesCount;
     const acpl = ratedMoves > 0 ? Math.round(p.totalCpl / ratedMoves) : 0;
-    const accuracy = Math.max(0, Math.min(100, Math.round(100 - (acpl / 150) * 100)));
+    const accuracy = Math.max(
+      0,
+      Math.min(100, Math.round(100 - (acpl / 150) * 100)),
+    );
 
     result[key] = {
       ...p,
@@ -112,23 +115,39 @@ function calculatePhaseAnalytics(moves = [], filterColor = "ALL") {
 
 function calculateRadarData(phaseStats, allMoves = []) {
   const opening = phaseStats[GAME_PHASES.OPENING] || { acpl: 15, accuracy: 90 };
-  const middlegame = phaseStats[GAME_PHASES.MIDDLEGAME] || { acpl: 35, accuracy: 76 };
+  const middlegame = phaseStats[GAME_PHASES.MIDDLEGAME] || {
+    acpl: 35,
+    accuracy: 76,
+  };
   const endgame = phaseStats[GAME_PHASES.ENDGAME] || { acpl: 20, accuracy: 86 };
 
   const openingScore = Math.max(20, Math.min(100, 100 - opening.acpl * 1.5));
-  const middlegameScore = Math.max(20, Math.min(100, 100 - middlegame.acpl * 1.1));
+  const middlegameScore = Math.max(
+    20,
+    Math.min(100, 100 - middlegame.acpl * 1.1),
+  );
   const endgameScore = Math.max(20, Math.min(100, 100 - endgame.acpl * 1.3));
 
   const totalMoves = allMoves.length || 1;
   const totalBlunders =
-    (opening.blunders || 0) + (middlegame.blunders || 0) + (endgame.blunders || 0);
+    (opening.blunders || 0) +
+    (middlegame.blunders || 0) +
+    (endgame.blunders || 0);
   const blunderRate = totalBlunders / (totalMoves / 2 || 1);
-  const resilienceScore = Math.max(15, Math.min(100, Math.round(100 - blunderRate * 35)));
+  const resilienceScore = Math.max(
+    15,
+    Math.min(100, Math.round(100 - blunderRate * 35)),
+  );
 
   const totalBest =
-    (opening.bestMoves || 0) + (middlegame.bestMoves || 0) + (endgame.bestMoves || 0);
+    (opening.bestMoves || 0) +
+    (middlegame.bestMoves || 0) +
+    (endgame.bestMoves || 0);
   const bestRate = totalBest / (totalMoves / 2 || 1);
-  const precisionScore = Math.max(20, Math.min(100, Math.round(bestRate * 100)));
+  const precisionScore = Math.max(
+    20,
+    Math.min(100, Math.round(bestRate * 100)),
+  );
 
   return [
     {
@@ -175,9 +194,12 @@ function getRadarPoint(index, totalAxes, value, radius, centerX, centerY) {
 function generateRadarPolygonPath(data, radius, centerX, centerY) {
   if (!data || data.length === 0) return "";
   const points = data.map((d, i) =>
-    getRadarPoint(i, data.length, d.value, radius, centerX, centerY)
+    getRadarPoint(i, data.length, d.value, radius, centerX, centerY),
   );
-  return points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
+  return (
+    points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") +
+    " Z"
+  );
 }
 
 // ==============================================================================
@@ -195,7 +217,10 @@ describe("ChessIQ Day 12: Real-Time Analysis Polling & Progress Lifecycle (@FE)"
 
   function computeProgress(currentPly, totalPlies) {
     if (!totalPlies || totalPlies <= 0) return 0;
-    return Math.min(100, Math.max(0, Math.round((currentPly / totalPlies) * 100)));
+    return Math.min(
+      100,
+      Math.max(0, Math.round((currentPly / totalPlies) * 100)),
+    );
   }
 
   function getAdaptiveInterval(status) {
@@ -211,8 +236,15 @@ describe("ChessIQ Day 12: Real-Time Analysis Polling & Progress Lifecycle (@FE)"
     }
   }
 
-  function computeBackoffDelay(attemptCount, baseDelay = 1000, maxDelay = 15000) {
-    return Math.min(maxDelay, baseDelay * Math.pow(1.5, Math.max(0, attemptCount)));
+  function computeBackoffDelay(
+    attemptCount,
+    baseDelay = 1000,
+    maxDelay = 15000,
+  ) {
+    return Math.min(
+      maxDelay,
+      baseDelay * Math.pow(1.5, Math.max(0, attemptCount)),
+    );
   }
 
   test("calculates progress percentage accurately across ply bounds", () => {
@@ -283,7 +315,9 @@ describe("ChessIQ Day 13: Tactical Blunder Classification Tiers & Navigation (@F
   function filterMovesByTier(moves, activeFilter) {
     if (!activeFilter || activeFilter === "ALL") return moves;
     if (activeFilter === "ERRORS") {
-      return moves.filter((m) => CLASSIFICATION_TIERS[m.classification]?.isError);
+      return moves.filter(
+        (m) => CLASSIFICATION_TIERS[m.classification]?.isError,
+      );
     }
     return moves.filter((m) => m.classification === activeFilter);
   }
@@ -417,7 +451,13 @@ describe("ChessIQ Day 14: Longitudinal Analytics & Phase Radar Visualizations (@
 
     expect(radar).toHaveLength(5);
     const axisNames = radar.map((r) => r.axis);
-    expect(axisNames).toEqual(["Opening", "Middlegame", "Endgame", "Resilience", "Precision"]);
+    expect(axisNames).toEqual([
+      "Opening",
+      "Middlegame",
+      "Endgame",
+      "Resilience",
+      "Precision",
+    ]);
 
     radar.forEach((item) => {
       expect(item.value).toBeGreaterThanOrEqual(0);

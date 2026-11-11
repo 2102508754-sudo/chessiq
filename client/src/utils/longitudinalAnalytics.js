@@ -112,7 +112,10 @@ export function calculatePhaseAnalytics(moves = [], filterColor = "ALL") {
     const p = phases[key];
     const ratedMoves = p.movesCount - p.bookMovesCount;
     const acpl = ratedMoves > 0 ? Math.round(p.totalCpl / ratedMoves) : 0;
-    const accuracy = Math.max(0, Math.min(100, Math.round(100 - (acpl / 150) * 100)));
+    const accuracy = Math.max(
+      0,
+      Math.min(100, Math.round(100 - (acpl / 150) * 100)),
+    );
 
     result[key] = {
       ...p,
@@ -143,14 +146,20 @@ export function calculatePhaseAnalytics(moves = [], filterColor = "ALL") {
  */
 export function calculateRadarData(phaseStats, allMoves = []) {
   const opening = phaseStats[GAME_PHASES.OPENING] || { acpl: 15, accuracy: 90 };
-  const middlegame = phaseStats[GAME_PHASES.MIDDLEGAME] || { acpl: 35, accuracy: 76 };
+  const middlegame = phaseStats[GAME_PHASES.MIDDLEGAME] || {
+    acpl: 35,
+    accuracy: 76,
+  };
   const endgame = phaseStats[GAME_PHASES.ENDGAME] || { acpl: 20, accuracy: 86 };
 
   // 1. Opening Score (0 - 100)
   const openingScore = Math.max(20, Math.min(100, 100 - opening.acpl * 1.5));
 
   // 2. Middlegame Score (0 - 100)
-  const middlegameScore = Math.max(20, Math.min(100, 100 - middlegame.acpl * 1.1));
+  const middlegameScore = Math.max(
+    20,
+    Math.min(100, 100 - middlegame.acpl * 1.1),
+  );
 
   // 3. Endgame Score (0 - 100)
   const endgameScore = Math.max(20, Math.min(100, 100 - endgame.acpl * 1.3));
@@ -158,15 +167,25 @@ export function calculateRadarData(phaseStats, allMoves = []) {
   // 4. Blunder Resilience (0 - 100): High score means very few blunders
   const totalMoves = allMoves.length || 1;
   const totalBlunders =
-    (opening.blunders || 0) + (middlegame.blunders || 0) + (endgame.blunders || 0);
+    (opening.blunders || 0) +
+    (middlegame.blunders || 0) +
+    (endgame.blunders || 0);
   const blunderRate = totalBlunders / (totalMoves / 2 || 1); // Blunders per player moves
-  const resilienceScore = Math.max(15, Math.min(100, Math.round(100 - blunderRate * 35)));
+  const resilienceScore = Math.max(
+    15,
+    Math.min(100, Math.round(100 - blunderRate * 35)),
+  );
 
   // 5. Tactical Precision / Resourcefulness (0 - 100)
   const totalBest =
-    (opening.bestMoves || 0) + (middlegame.bestMoves || 0) + (endgame.bestMoves || 0);
+    (opening.bestMoves || 0) +
+    (middlegame.bestMoves || 0) +
+    (endgame.bestMoves || 0);
   const bestRate = totalBest / (totalMoves / 2 || 1);
-  const precisionScore = Math.max(20, Math.min(100, Math.round(bestRate * 100)));
+  const precisionScore = Math.max(
+    20,
+    Math.min(100, Math.round(bestRate * 100)),
+  );
 
   return [
     {
@@ -214,7 +233,14 @@ export function calculateRadarData(phaseStats, allMoves = []) {
  * @param {number} centerY - SVG center Y
  * @returns {{ x: number, y: number }}
  */
-export function getRadarPoint(index, totalAxes, value, radius, centerX, centerY) {
+export function getRadarPoint(
+  index,
+  totalAxes,
+  value,
+  radius,
+  centerX,
+  centerY,
+) {
   // Start from top (-PI/2) and rotate clockwise
   const angle = (Math.PI * 2 * index) / totalAxes - Math.PI / 2;
   const scaledRadius = (Math.max(0, Math.min(100, value)) / 100) * radius;
@@ -234,7 +260,10 @@ export function getRadarPoint(index, totalAxes, value, radius, centerX, centerY)
 export function generateRadarPolygonPath(data, radius, centerX, centerY) {
   if (!data || data.length === 0) return "";
   const points = data.map((d, i) =>
-    getRadarPoint(i, data.length, d.value, radius, centerX, centerY)
+    getRadarPoint(i, data.length, d.value, radius, centerX, centerY),
   );
-  return points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
+  return (
+    points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") +
+    " Z"
+  );
 }

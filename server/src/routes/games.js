@@ -318,7 +318,9 @@ router.get("/jobs/:id", async (req, res, next) => {
     const currentPly = parseInt(job.current_ply || 0, 10);
     const totalPlies = parseInt(job.total_plies || 0, 10);
     const progressPercent =
-      totalPlies > 0 ? Math.min(100, Math.round((currentPly / totalPlies) * 100)) : 0;
+      totalPlies > 0
+        ? Math.min(100, Math.round((currentPly / totalPlies) * 100))
+        : 0;
 
     let analysis = null;
     if (job.status === "completed") {

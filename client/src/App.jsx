@@ -84,8 +84,16 @@ export default function App() {
               id: g.id,
               title: `${g.white_player || "White"} vs ${g.black_player || "Black"}`,
               event: "ChessIQ 6NF Analysis",
-              white: { name: g.white_player || "White", rating: g.white_elo || 1800, accuracy: 92.4 },
-              black: { name: g.black_player || "Black", rating: g.black_elo || 1800, accuracy: 87.1 },
+              white: {
+                name: g.white_player || "White",
+                rating: g.white_elo || 1800,
+                accuracy: 92.4,
+              },
+              black: {
+                name: g.black_player || "Black",
+                rating: g.black_elo || 1800,
+                accuracy: 87.1,
+              },
               result: g.result || "*",
               eco: g.eco_code || "A00",
               opening: "Analyzed Game",
@@ -116,7 +124,10 @@ export default function App() {
         setCustomPgnInput("");
       }
     } catch (err) {
-      console.warn("Backend upload failed, loading local preview:", err.message);
+      console.warn(
+        "Backend upload failed, loading local preview:",
+        err.message,
+      );
       try {
         const c = new Chess();
         c.loadPgn(customPgnInput);
@@ -1579,20 +1590,31 @@ export default function App() {
                 >
                   <button
                     onClick={handlePgnUpload}
-                    disabled={polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING}
+                    disabled={
+                      polling.status === POLLING_STATUS.PROCESSING ||
+                      polling.status === POLLING_STATUS.UPLOADING
+                    }
                     className="btn-primary"
                     style={{
                       padding: "6px 14px",
                       fontSize: "12px",
-                      opacity: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? 0.6 : 1,
-                      cursor: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? "not-allowed" : "pointer",
+                      opacity:
+                        polling.status === POLLING_STATUS.PROCESSING ||
+                        polling.status === POLLING_STATUS.UPLOADING
+                          ? 0.6
+                          : 1,
+                      cursor:
+                        polling.status === POLLING_STATUS.PROCESSING ||
+                        polling.status === POLLING_STATUS.UPLOADING
+                          ? "not-allowed"
+                          : "pointer",
                     }}
                   >
                     {polling.status === POLLING_STATUS.UPLOADING
                       ? "Uploading PGN..."
                       : polling.status === POLLING_STATUS.PROCESSING
-                      ? "Analyzing Game..."
-                      : "Start Game Review"}
+                        ? "Analyzing Game..."
+                        : "Start Game Review"}
                   </button>
                 </div>
               </div>

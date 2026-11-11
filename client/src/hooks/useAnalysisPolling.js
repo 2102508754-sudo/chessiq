@@ -44,7 +44,9 @@ export function useAnalysisPolling({
 } = {}) {
   const [jobId, setJobId] = useState(initialJobId);
   const [gameId, setGameId] = useState(initialGameId);
-  const [status, setStatus] = useState(initialJobId ? POLLING_STATUS.PENDING : POLLING_STATUS.IDLE);
+  const [status, setStatus] = useState(
+    initialJobId ? POLLING_STATUS.PENDING : POLLING_STATUS.IDLE,
+  );
   const [currentPly, setCurrentPly] = useState(0);
   const [totalPlies, setTotalPlies] = useState(0);
   const [progressPercent, setProgressPercent] = useState(0);
@@ -102,7 +104,8 @@ export function useAnalysisPolling({
         const remoteStatus = (data.status || "pending").toLowerCase();
         const cPly = parseInt(data.current_ply ?? 0, 10);
         const tPlies = parseInt(data.total_plies ?? 0, 10);
-        const pct = tPlies > 0 ? Math.min(100, Math.round((cPly / tPlies) * 100)) : 0;
+        const pct =
+          tPlies > 0 ? Math.min(100, Math.round((cPly / tPlies) * 100)) : 0;
 
         setCurrentPly(cPly);
         setTotalPlies(tPlies);
@@ -123,7 +126,9 @@ export function useAnalysisPolling({
         if (remoteStatus === "failed") {
           stopPolling();
           setStatus(POLLING_STATUS.FAILED);
-          const failErr = new Error(data.last_error || "Analysis job failed on worker node");
+          const failErr = new Error(
+            data.last_error || "Analysis job failed on worker node",
+          );
           setError(failErr.message);
           if (onError) onError(failErr);
           return;
@@ -131,7 +136,8 @@ export function useAnalysisPolling({
 
         // Schedule next polling tick if still active
         if (isPollingRef.current) {
-          const delay = remoteStatus === "processing" ? fastIntervalMs : slowIntervalMs;
+          const delay =
+            remoteStatus === "processing" ? fastIntervalMs : slowIntervalMs;
           timeoutRef.current = setTimeout(() => {
             executePollStep(activeId);
           }, delay);
@@ -142,7 +148,10 @@ export function useAnalysisPolling({
         // Transient error handling with exponential backoff (max 5 retries)
         retryCountRef.current += 1;
         if (retryCountRef.current <= 5 && isPollingRef.current) {
-          const backoffDelay = Math.min(6000, 1000 * Math.pow(1.5, retryCountRef.current));
+          const backoffDelay = Math.min(
+            6000,
+            1000 * Math.pow(1.5, retryCountRef.current),
+          );
           timeoutRef.current = setTimeout(() => {
             executePollStep(activeId);
           }, backoffDelay);
@@ -155,7 +164,7 @@ export function useAnalysisPolling({
         }
       }
     },
-    [fastIntervalMs, slowIntervalMs, stopPolling, onComplete, onError]
+    [fastIntervalMs, slowIntervalMs, stopPolling, onComplete, onError],
   );
 
   // Public start method: kicks off polling for a newly enqueued jobId
@@ -176,7 +185,7 @@ export function useAnalysisPolling({
 
       executePollStep(newJobId);
     },
-    [stopPolling, executePollStep]
+    [stopPolling, executePollStep],
   );
 
   // Manual retry method
@@ -204,7 +213,8 @@ export function useAnalysisPolling({
     attemptCount,
     error,
     completedAnalysis,
-    isPolling: status === POLLING_STATUS.PENDING || status === POLLING_STATUS.PROCESSING,
+    isPolling:
+      status === POLLING_STATUS.PENDING || status === POLLING_STATUS.PROCESSING,
     isCompleted: status === POLLING_STATUS.COMPLETED,
     isFailed: status === POLLING_STATUS.FAILED,
     startPolling,

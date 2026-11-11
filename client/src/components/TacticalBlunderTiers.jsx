@@ -33,7 +33,8 @@ export const TACTICAL_TIERS = {
     color: "#38bdf8",
     bg: "rgba(56, 189, 248, 0.15)",
     border: "rgba(56, 189, 248, 0.4)",
-    description: "A profound, game-winning sacrifice finding the only winning resource.",
+    description:
+      "A profound, game-winning sacrifice finding the only winning resource.",
   },
   BEST: {
     key: "BEST",
@@ -51,7 +52,8 @@ export const TACTICAL_TIERS = {
     color: "#60a5fa",
     bg: "rgba(96, 165, 250, 0.15)",
     border: "rgba(96, 165, 250, 0.4)",
-    description: "Authoritative catalog opening move; excluded from ACPL calculation.",
+    description:
+      "Authoritative catalog opening move; excluded from ACPL calculation.",
   },
   GOOD: {
     key: "GOOD",
@@ -60,7 +62,8 @@ export const TACTICAL_TIERS = {
     color: "#94a3b8",
     bg: "rgba(148, 163, 184, 0.12)",
     border: "rgba(148, 163, 184, 0.3)",
-    description: "A natural, solid continuation that maintains dynamic balance (10 < CPL <= 30).",
+    description:
+      "A natural, solid continuation that maintains dynamic balance (10 < CPL <= 30).",
   },
   INACCURACY: {
     key: "INACCURACY",
@@ -69,7 +72,8 @@ export const TACTICAL_TIERS = {
     color: "#f59e0b",
     bg: "rgba(245, 158, 11, 0.15)",
     border: "rgba(245, 158, 11, 0.4)",
-    description: "Suboptimal move relinquishing slight positional pressure (30 < CPL <= 90).",
+    description:
+      "Suboptimal move relinquishing slight positional pressure (30 < CPL <= 90).",
   },
   MISTAKE: {
     key: "MISTAKE",
@@ -78,7 +82,8 @@ export const TACTICAL_TIERS = {
     color: "#f97316",
     bg: "rgba(249, 115, 22, 0.15)",
     border: "rgba(249, 115, 22, 0.4)",
-    description: "Noticeable tactical concession worsening position significantly (90 < CPL <= 200).",
+    description:
+      "Noticeable tactical concession worsening position significantly (90 < CPL <= 200).",
   },
   BLUNDER: {
     key: "BLUNDER",
@@ -87,7 +92,8 @@ export const TACTICAL_TIERS = {
     color: "#f43f5e",
     bg: "rgba(244, 63, 94, 0.2)",
     border: "rgba(244, 63, 94, 0.5)",
-    description: "Catastrophic oversight swinging evaluation drastically (CPL > 200 or ΔW >= 25%).",
+    description:
+      "Catastrophic oversight swinging evaluation drastically (CPL > 200 or ΔW >= 25%).",
   },
   MISSED_WIN: {
     key: "MISSED_WIN",
@@ -96,7 +102,8 @@ export const TACTICAL_TIERS = {
     color: "#a855f7",
     bg: "rgba(168, 85, 247, 0.18)",
     border: "rgba(168, 85, 247, 0.45)",
-    description: "Failed to capitalize on a decisive winning advantage (Win Prob dropped from >80% to <55%).",
+    description:
+      "Failed to capitalize on a decisive winning advantage (Win Prob dropped from >80% to <55%).",
   },
 };
 
@@ -141,14 +148,21 @@ export default function TacticalBlunderTiers({
         return cls === "BLUNDER" || cls === "MISTAKE" || cls === "MISSED_WIN";
       });
     }
-    return moves.filter((m) => (m.classification || "").toUpperCase() === selectedFilter);
+    return moves.filter(
+      (m) => (m.classification || "").toUpperCase() === selectedFilter,
+    );
   }, [moves, selectedFilter]);
 
   // Find next and previous critical blunder/mistake relative to current ply
   const { prevCriticalPly, nextCriticalPly } = useMemo(() => {
     const critical = moves.filter((m) => {
       const cls = (m.classification || "").toUpperCase();
-      return cls === "BLUNDER" || cls === "MISTAKE" || cls === "MISSED_WIN" || cls === "INACCURACY";
+      return (
+        cls === "BLUNDER" ||
+        cls === "MISTAKE" ||
+        cls === "MISSED_WIN" ||
+        cls === "INACCURACY"
+      );
     });
 
     const prev = [...critical].reverse().find((m) => m.ply < currentPlyIndex);
@@ -182,7 +196,14 @@ export default function TacticalBlunderTiers({
         }}
       >
         {/* Filter Pills */}
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            flexWrap: "wrap",
+          }}
+        >
           <button
             onClick={() => setSelectedFilter("ALL")}
             style={{
@@ -190,9 +211,18 @@ export default function TacticalBlunderTiers({
               borderRadius: "6px",
               fontSize: "12px",
               cursor: "pointer",
-              background: selectedFilter === "ALL" ? "rgba(56, 189, 248, 0.2)" : "rgba(255, 255, 255, 0.05)",
-              color: selectedFilter === "ALL" ? "var(--accent-cyan)" : "var(--text-secondary)",
-              border: selectedFilter === "ALL" ? "1px solid rgba(56, 189, 248, 0.4)" : "1px solid var(--border-color)",
+              background:
+                selectedFilter === "ALL"
+                  ? "rgba(56, 189, 248, 0.2)"
+                  : "rgba(255, 255, 255, 0.05)",
+              color:
+                selectedFilter === "ALL"
+                  ? "var(--accent-cyan)"
+                  : "var(--text-secondary)",
+              border:
+                selectedFilter === "ALL"
+                  ? "1px solid rgba(56, 189, 248, 0.4)"
+                  : "1px solid var(--border-color)",
               fontWeight: "600",
             }}
           >
@@ -206,9 +236,18 @@ export default function TacticalBlunderTiers({
               borderRadius: "6px",
               fontSize: "12px",
               cursor: "pointer",
-              background: selectedFilter === "CRITICAL" ? "rgba(244, 63, 94, 0.25)" : "rgba(255, 255, 255, 0.05)",
-              color: selectedFilter === "CRITICAL" ? "#fb7185" : "var(--text-secondary)",
-              border: selectedFilter === "CRITICAL" ? "1px solid rgba(244, 63, 94, 0.5)" : "1px solid var(--border-color)",
+              background:
+                selectedFilter === "CRITICAL"
+                  ? "rgba(244, 63, 94, 0.25)"
+                  : "rgba(255, 255, 255, 0.05)",
+              color:
+                selectedFilter === "CRITICAL"
+                  ? "#fb7185"
+                  : "var(--text-secondary)",
+              border:
+                selectedFilter === "CRITICAL"
+                  ? "1px solid rgba(244, 63, 94, 0.5)"
+                  : "1px solid var(--border-color)",
               fontWeight: "700",
               display: "flex",
               alignItems: "center",
@@ -216,7 +255,8 @@ export default function TacticalBlunderTiers({
             }}
           >
             <ShieldAlert size={13} color="#f43f5e" />
-            Critical Errors ({tierCounts.BLUNDER + tierCounts.MISTAKE + tierCounts.MISSED_WIN})
+            Critical Errors (
+            {tierCounts.BLUNDER + tierCounts.MISTAKE + tierCounts.MISSED_WIN})
           </button>
 
           <button
@@ -226,9 +266,18 @@ export default function TacticalBlunderTiers({
               borderRadius: "6px",
               fontSize: "12px",
               cursor: "pointer",
-              background: selectedFilter === "BLUNDER" ? "rgba(244, 63, 94, 0.25)" : "rgba(255, 255, 255, 0.05)",
-              color: selectedFilter === "BLUNDER" ? "#fb7185" : "var(--text-secondary)",
-              border: selectedFilter === "BLUNDER" ? "1px solid rgba(244, 63, 94, 0.5)" : "1px solid var(--border-color)",
+              background:
+                selectedFilter === "BLUNDER"
+                  ? "rgba(244, 63, 94, 0.25)"
+                  : "rgba(255, 255, 255, 0.05)",
+              color:
+                selectedFilter === "BLUNDER"
+                  ? "#fb7185"
+                  : "var(--text-secondary)",
+              border:
+                selectedFilter === "BLUNDER"
+                  ? "1px solid rgba(244, 63, 94, 0.5)"
+                  : "1px solid var(--border-color)",
               fontWeight: "600",
             }}
           >
@@ -242,9 +291,18 @@ export default function TacticalBlunderTiers({
               borderRadius: "6px",
               fontSize: "12px",
               cursor: "pointer",
-              background: selectedFilter === "MISTAKE" ? "rgba(249, 115, 22, 0.25)" : "rgba(255, 255, 255, 0.05)",
-              color: selectedFilter === "MISTAKE" ? "#fb923c" : "var(--text-secondary)",
-              border: selectedFilter === "MISTAKE" ? "1px solid rgba(249, 115, 22, 0.5)" : "1px solid var(--border-color)",
+              background:
+                selectedFilter === "MISTAKE"
+                  ? "rgba(249, 115, 22, 0.25)"
+                  : "rgba(255, 255, 255, 0.05)",
+              color:
+                selectedFilter === "MISTAKE"
+                  ? "#fb923c"
+                  : "var(--text-secondary)",
+              border:
+                selectedFilter === "MISTAKE"
+                  ? "1px solid rgba(249, 115, 22, 0.5)"
+                  : "1px solid var(--border-color)",
               fontWeight: "600",
             }}
           >
@@ -258,9 +316,18 @@ export default function TacticalBlunderTiers({
               borderRadius: "6px",
               fontSize: "12px",
               cursor: "pointer",
-              background: selectedFilter === "BEST" ? "rgba(16, 185, 129, 0.2)" : "rgba(255, 255, 255, 0.05)",
-              color: selectedFilter === "BEST" ? "var(--accent-emerald)" : "var(--text-secondary)",
-              border: selectedFilter === "BEST" ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid var(--border-color)",
+              background:
+                selectedFilter === "BEST"
+                  ? "rgba(16, 185, 129, 0.2)"
+                  : "rgba(255, 255, 255, 0.05)",
+              color:
+                selectedFilter === "BEST"
+                  ? "var(--accent-emerald)"
+                  : "var(--text-secondary)",
+              border:
+                selectedFilter === "BEST"
+                  ? "1px solid rgba(16, 185, 129, 0.4)"
+                  : "1px solid var(--border-color)",
               fontWeight: "600",
             }}
           >
@@ -275,10 +342,14 @@ export default function TacticalBlunderTiers({
             onClick={() => prevCriticalPly && onSelectPly(prevCriticalPly)}
             style={{
               padding: "6px 10px",
-              background: prevCriticalPly ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.02)",
+              background: prevCriticalPly
+                ? "rgba(255, 255, 255, 0.08)"
+                : "rgba(255, 255, 255, 0.02)",
               border: "1px solid var(--border-color)",
               borderRadius: "6px",
-              color: prevCriticalPly ? "var(--text-primary)" : "var(--text-muted)",
+              color: prevCriticalPly
+                ? "var(--text-primary)"
+                : "var(--text-muted)",
               cursor: prevCriticalPly ? "pointer" : "not-allowed",
               fontSize: "11px",
               fontWeight: "600",
@@ -296,8 +367,12 @@ export default function TacticalBlunderTiers({
             onClick={() => nextCriticalPly && onSelectPly(nextCriticalPly)}
             style={{
               padding: "6px 12px",
-              background: nextCriticalPly ? "rgba(244, 63, 94, 0.2)" : "rgba(255, 255, 255, 0.02)",
-              border: nextCriticalPly ? "1px solid rgba(244, 63, 94, 0.4)" : "1px solid var(--border-color)",
+              background: nextCriticalPly
+                ? "rgba(244, 63, 94, 0.2)"
+                : "rgba(255, 255, 255, 0.02)",
+              border: nextCriticalPly
+                ? "1px solid rgba(244, 63, 94, 0.4)"
+                : "1px solid var(--border-color)",
               borderRadius: "6px",
               color: nextCriticalPly ? "#fb7185" : "var(--text-muted)",
               cursor: nextCriticalPly ? "pointer" : "not-allowed",
@@ -328,7 +403,13 @@ export default function TacticalBlunderTiers({
           }}
         >
           {/* Top Row: Badge, Move, and Centipawn Loss */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span
                 style={{
@@ -356,26 +437,34 @@ export default function TacticalBlunderTiers({
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              {activeMove.cpl !== undefined && activeMove.classification !== "BOOK" && (
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontFamily: "var(--font-mono)",
-                    color: activeMove.cpl > 150 ? "var(--accent-rose)" : "var(--text-secondary)",
-                  }}
-                >
-                  Centipawn Loss: <strong>+{activeMove.cpl || 0} cp</strong>
-                </span>
-              )}
+              {activeMove.cpl !== undefined &&
+                activeMove.classification !== "BOOK" && (
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontFamily: "var(--font-mono)",
+                      color:
+                        activeMove.cpl > 150
+                          ? "var(--accent-rose)"
+                          : "var(--text-secondary)",
+                    }}
+                  >
+                    Centipawn Loss: <strong>+{activeMove.cpl || 0} cp</strong>
+                  </span>
+                )}
               <span
                 style={{
                   fontSize: "12px",
                   fontFamily: "var(--font-mono)",
                   fontWeight: "700",
-                  color: activeMove.eval >= 0 ? "var(--text-primary)" : "var(--accent-cyan)",
+                  color:
+                    activeMove.eval >= 0
+                      ? "var(--text-primary)"
+                      : "var(--accent-cyan)",
                 }}
               >
-                Eval: {activeMove.eval > 0 ? `+${activeMove.eval}` : activeMove.eval}
+                Eval:{" "}
+                {activeMove.eval > 0 ? `+${activeMove.eval}` : activeMove.eval}
               </span>
             </div>
           </div>
@@ -407,7 +496,9 @@ export default function TacticalBlunderTiers({
               }}
             >
               <Zap size={14} color="var(--accent-cyan)" />
-              <span style={{ color: "var(--text-muted)" }}>Engine Alternative:</span>
+              <span style={{ color: "var(--text-muted)" }}>
+                Engine Alternative:
+              </span>
               <span
                 style={{
                   color: "var(--accent-cyan)",
@@ -417,7 +508,9 @@ export default function TacticalBlunderTiers({
               >
                 {activeMove.bestMove}
               </span>
-              <span style={{ color: "var(--text-secondary)", fontSize: "11px" }}>
+              <span
+                style={{ color: "var(--text-secondary)", fontSize: "11px" }}
+              >
                 (Preserves optimal dynamic evaluation)
               </span>
             </div>
@@ -433,7 +526,8 @@ export default function TacticalBlunderTiers({
             fontSize: "13px",
           }}
         >
-          Select or navigate to any move to inspect tactical blunder telemetry and Stockfish explanations.
+          Select or navigate to any move to inspect tactical blunder telemetry
+          and Stockfish explanations.
         </div>
       )}
     </div>

@@ -69,8 +69,18 @@ export default function AnalysisProgressBar({
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {isUploading && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Upload size={18} color="var(--accent-cyan)" className="animate-pulse" />
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--accent-cyan)" }}>
+              <Upload
+                size={18}
+                color="var(--accent-cyan)"
+                className="animate-pulse"
+              />
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "var(--accent-cyan)",
+                }}
+              >
                 Uploading Game PGN...
               </span>
             </div>
@@ -79,7 +89,13 @@ export default function AnalysisProgressBar({
           {isPending && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Clock size={18} color="var(--accent-amber)" />
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--accent-amber)" }}>
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "var(--accent-amber)",
+                }}
+              >
                 Queued in FIFO Pipeline (Attempt #{attemptCount})
               </span>
             </div>
@@ -88,7 +104,13 @@ export default function AnalysisProgressBar({
           {isProcessing && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Cpu size={18} color="var(--accent-cyan)" />
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--accent-cyan)" }}>
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "var(--accent-cyan)",
+                }}
+              >
                 Stockfish 16.1 NNUE Deep Analysis Active
               </span>
             </div>
@@ -97,7 +119,13 @@ export default function AnalysisProgressBar({
           {isCompleted && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <CheckCircle2 size={18} color="var(--accent-emerald)" />
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--accent-emerald)" }}>
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "var(--accent-emerald)",
+                }}
+              >
                 Analysis Complete &amp; Verified (6NF Telemetry Synced)
               </span>
             </div>
@@ -106,7 +134,13 @@ export default function AnalysisProgressBar({
           {isFailed && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <AlertTriangle size={18} color="var(--accent-rose)" />
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--accent-rose)" }}>
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "var(--accent-rose)",
+                }}
+              >
                 Analysis Processing Interrupted
               </span>
             </div>
@@ -189,10 +223,14 @@ export default function AnalysisProgressBar({
         >
           <span>
             {isProcessing && `Analyzing ply ${currentPly} of ${totalPlies}...`}
-            {isPending && "Awaiting Stockfish process pool worker acquisition..."}
-            {isUploading && "Parsing PGN headers & generating canonical signature..."}
-            {isCompleted && `${totalPlies} plies successfully evaluated & classified`}
-            {isFailed && (error || "Worker lease error. Check database or queue.")}
+            {isPending &&
+              "Awaiting Stockfish process pool worker acquisition..."}
+            {isUploading &&
+              "Parsing PGN headers & generating canonical signature..."}
+            {isCompleted &&
+              `${totalPlies} plies successfully evaluated & classified`}
+            {isFailed &&
+              (error || "Worker lease error. Check database or queue.")}
           </span>
           <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>
             {progressPercent}%
@@ -214,13 +252,17 @@ export default function AnalysisProgressBar({
           }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <Zap size={12} color="var(--accent-cyan)" /> Depth: <strong>14 Ply</strong>
+            <Zap size={12} color="var(--accent-cyan)" /> Depth:{" "}
+            <strong>14 Ply</strong>
           </span>
           <span>
             Worker: <strong>Stockfish NNUE Worker Pool</strong>
           </span>
           <span>
-            Heartbeat: <strong style={{ color: "var(--accent-emerald)" }}>Active (3.0s Lease)</strong>
+            Heartbeat:{" "}
+            <strong style={{ color: "var(--accent-emerald)" }}>
+              Active (3.0s Lease)
+            </strong>
           </span>
         </div>
       )}
