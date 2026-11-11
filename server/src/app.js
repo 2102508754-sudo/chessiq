@@ -179,7 +179,9 @@ app.get("/api/health", async (req, res, next) => {
 
 // 9. Core Domain API Routes
 const gamesRouter = require("./routes/games");
+const openingsRouter = require("./routes/openings");
 app.use("/api/games", gamesRouter);
+app.use("/api/openings", openingsRouter);
 
 // Day 12 & 14 API Route Aliases per System Design §8.1
 app.use("/api/jobs", (req, res, next) => {

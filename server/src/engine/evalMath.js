@@ -234,6 +234,26 @@ function evalToCentipawns(type, value) {
   return value;
 }
 
+/**
+ * Computes ACPL partitioned by White and Black, strictly excluding book moves.
+ *
+ * @param {Array<{ cplCapped: number, isBookMove?: boolean, plyNumber?: number }>} moves
+ * @returns {{ whiteAcpl: number, blackAcpl: number }}
+ */
+function computeGameACPLByColor(moves) {
+  const whiteMoves = moves.filter((m, i) =>
+    typeof m.plyNumber === "number" ? m.plyNumber % 2 === 1 : i % 2 === 0,
+  );
+  const blackMoves = moves.filter((m, i) =>
+    typeof m.plyNumber === "number" ? m.plyNumber % 2 === 0 : i % 2 === 1,
+  );
+
+  return {
+    whiteAcpl: computeACPL(whiteMoves),
+    blackAcpl: computeACPL(blackMoves),
+  };
+}
+
 module.exports = {
   mateToCentipawns,
   invertEvaluation,
@@ -241,6 +261,7 @@ module.exports = {
   computeCentipawnLoss,
   classifyMove,
   computeACPL,
+  computeGameACPLByColor,
   normalizeRawEval,
   evalToCentipawns,
 };

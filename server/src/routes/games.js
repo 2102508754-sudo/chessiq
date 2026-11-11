@@ -10,6 +10,7 @@
 const express = require("express");
 const crypto = require("crypto");
 const { parsePgn, resolvePlayerColor } = require("../services/pgnParser");
+const { openingCatalog } = require("../services/openingCatalog");
 const { pool, query, withTransaction } = require("../db/pool");
 const logger = require("../utils/logger");
 const AppError = require("../utils/AppError");
@@ -206,18 +207,26 @@ router.post("/upload", async (req, res, next) => {
         );
       }
 
-      // Optional: ECO code
-      if (headers.ECO) {
+      // ECO code: Header tag or dynamic opening catalog verification (§11.5)
+      let resolvedEco = headers.ECO || null;
+      if (!resolvedEco && moves && moves.length > 0) {
+        const detected = openingCatalog.match(moves.map((m) => m.san));
+        if (detected.matchedOpening) {
+          resolvedEco = detected.matchedOpening.ecoCode;
+        }
+      }
+
+      if (resolvedEco) {
         // Only insert if the ECO code exists in the opening catalog
         const ecoCheck = await client.query(
           "SELECT eco_code FROM chess_openings WHERE eco_code = $1;",
-          [headers.ECO],
+          [resolvedEco],
         );
         if (ecoCheck.rows.length > 0) {
           gameInserts.push(
             client.query(
               "INSERT INTO game_ecos (game_id, eco_code) VALUES ($1, $2);",
-              [gameId, headers.ECO],
+              [gameId, resolvedEco],
             ),
           );
         }
@@ -282,6 +291,7 @@ router.post("/upload", async (req, res, next) => {
         total_plies: totalPlies,
         move_signature: moveSignature,
         user_color: resolvedColor,
+        eco_code: resolvedEco,
         white_player: headers.White || "Unknown",
         black_player: headers.Black || "Unknown",
         result: headers.Result || "*",

@@ -93,9 +93,12 @@ chess_project/
 │   │   │   └── puzzles.js         # Personalized puzzle generator & recommendations service
 │   │   ├── routes/
 │   │   │   ├── games.js           # Transactional PGN upload, jobs & longitudinal analytics
+│   │   │   ├── openings.js        # Opening book catalog REST API & prefix matcher
 │   │   │   ├── puzzles.js         # 3NF puzzle catalog, themes, & blunder puzzle extraction
 │   │   │   └── recommendations.js # Personalized training recommendations API (§8.1)
-│   │   ├── services/pgnParser.js  # PGN parsing, FEN tracking & canonical hashing
+│   │   ├── services/
+│   │   │   ├── pgnParser.js       # PGN parsing, FEN tracking & canonical hashing
+│   │   │   └── openingCatalog.js  # Authoritative in-memory Trie opening book catalog
 │   │   ├── engine/
 │   │   │   ├── uciProtocol.js     # UCI protocol text parser & command builders
 │   │   │   ├── stockfishWorker.js # Stockfish child process manager & memory isolation

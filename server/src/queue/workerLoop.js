@@ -16,6 +16,7 @@ const { HeartbeatWatchdog } = require("./heartbeat");
 const { createListenClient } = require("../db/pool");
 const { ingestGameAnalysis6NF } = require("../db/ingestion");
 const { parsePgn } = require("../services/pgnParser");
+const { openingCatalog } = require("../services/openingCatalog");
 const {
   invertEvaluation,
   classifyMove,
@@ -96,17 +97,23 @@ async function processJob(pool, job, stockfishPool, options = {}) {
     const moves = parsed.moves;
 
     // Resolve authoritative ECO opening and link game_ecos relation (6NF)
+    let openingMatch = null;
     try {
       const allSanMoves = moves.map((m) => m.san);
-      const openingMatch = await matchOpeningByMoves(pool, allSanMoves);
-      if (openingMatch && openingMatch.ecoCode) {
-        await linkGameEco(pool, gameId, openingMatch.ecoCode);
+      const dbOpeningMatch = await matchOpeningByMoves(pool, allSanMoves);
+      if (dbOpeningMatch && dbOpeningMatch.ecoCode) {
+        await linkGameEco(pool, gameId, dbOpeningMatch.ecoCode);
       }
+      openingMatch = openingCatalog.match(allSanMoves);
     } catch (ecoErr) {
       logger.warn(
         { gameId, err: ecoErr.message },
         "Could not resolve game ECO opening",
       );
+      try {
+        const allSanMoves = moves.map((m) => m.san);
+        openingMatch = openingCatalog.match(allSanMoves);
+      } catch (_) {}
     }
 
     // 2. Acquire Stockfish Worker from Pool
@@ -122,7 +129,7 @@ async function processJob(pool, job, stockfishPool, options = {}) {
     });
     watchdog.start();
 
-    // 4. Analyze Plies Iteratively
+    // 5. Analyze Plies Iteratively
     const chess = new Chess();
     const moveAnalyses = [];
 
@@ -174,7 +181,7 @@ async function processJob(pool, job, stockfishPool, options = {}) {
         const movesSoFar = moves.slice(0, plyNumber).map((m) => m.san);
         isBookMove = await isCatalogBookMove(pool, movesSoFar);
       } catch (_) {
-        isBookMove = false;
+        isBookMove = openingMatch?.isBookMoveForPly?.(plyNumber) || false;
       }
 
       // Apply Polarity Inversion & Loss Math
