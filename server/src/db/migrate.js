@@ -184,6 +184,23 @@ async function runMigrations() {
     );
   }
 
+  // Execute Day 15 Personalized Puzzles verification if available (Day 15+)
+  try {
+    const { rows: day15Rows } = await pool.query(
+      "SELECT fn_verify_day15_puzzles() AS diagnostic;",
+    );
+    const day15Diagnostic = day15Rows[0]?.diagnostic;
+    logger.info(
+      { day15Diagnostic },
+      "PostgreSQL Day 15 Curated Puzzles & Generator verified",
+    );
+  } catch (err) {
+    logger.debug(
+      { error: err.message },
+      "Note: fn_verify_day15_puzzles() not yet available or not applied",
+    );
+  }
+
   const totalTime = Date.now() - startTime;
   logger.info(
     {

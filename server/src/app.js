@@ -191,6 +191,13 @@ app.use("/api/analytics", (req, res, next) => {
   gamesRouter(req, res, next);
 });
 
+// Day 15: Personalized Training Puzzles & Recommendations (§8.1)
+const puzzlesRouter = require("./routes/puzzles");
+app.use("/api/puzzles", puzzlesRouter);
+
+const recommendationsRouter = require("./routes/recommendations");
+app.use("/api/recommendations", recommendationsRouter);
+
 // 10. 404 Route Fallback
 app.use((req, res, next) => {
   next(AppError.notFound(`Route not found: ${req.method} ${req.originalUrl}`));

@@ -77,7 +77,8 @@ chess_project/
 │       ├── 002_reconstruction_views_3nf.sql # Lossless 3NF views (v_users, v_games, etc.)
 │       ├── 003_sp_ingest_game_analysis_6nf.sql # PL/pgSQL high-performance bulk ingestion
 │       ├── 004_stale_job_recovery_sweep.sql # Stale worker recovery sweep & claim invalidation
-│       └── 005_seed_chess_openings_catalog.sql # 6NF opening catalog, prefix matching & ACPL exclusion
+│       ├── 005_seed_chess_openings_catalog.sql # 6NF opening catalog, prefix matching & ACPL exclusion
+│       └── 006_personalized_training_puzzles.sql # Curated puzzles, blunder extraction & personalized generator
 │
 ├── server/                        # Backend API Gateway & Engine Worker
 │   ├── Dockerfile                 # Multi-stage container with Stockfish NNUE
@@ -88,8 +89,12 @@ chess_project/
 │   │   ├── db/
 │   │   │   ├── pool.js            # pg.Pool singleton & LISTEN client
 │   │   │   ├── migrate.js         # SHA-256 verified migration engine
-│   │   │   └── openings.js        # Opening catalog matching & ACPL calculation service
-│   │   ├── routes/games.js        # Transactional PGN upload & deduplication gateway
+│   │   │   ├── openings.js        # Opening catalog matching & ACPL calculation service
+│   │   │   └── puzzles.js         # Personalized puzzle generator & recommendations service
+│   │   ├── routes/
+│   │   │   ├── games.js           # Transactional PGN upload, jobs & longitudinal analytics
+│   │   │   ├── puzzles.js         # 3NF puzzle catalog, themes, & blunder puzzle extraction
+│   │   │   └── recommendations.js # Personalized training recommendations API (§8.1)
 │   │   ├── services/pgnParser.js  # PGN parsing, FEN tracking & canonical hashing
 │   │   ├── engine/
 │   │   │   ├── uciProtocol.js     # UCI protocol text parser & command builders
@@ -114,7 +119,8 @@ chess_project/
 │       ├── day9-stale-job-recovery.test.js # Stale job recovery sweep & token invalidation suite
 │       ├── day10-openings.test.js # Opening catalog verification & ACPL exclusion suite
 │       ├── day11-chessboard.test.js # Interactive Chessboard UI & dynamic board flipping suite
-│       └── day12-14-frontend-analytics.test.js # Real-time polling, blunder tiers & radar analytics suite
+│       ├── day12-14-frontend-analytics.test.js # Real-time polling, blunder tiers & radar analytics suite
+│       └── day15-puzzles.test.js  # Personalized puzzle generator & recommendations test suite
 │
 ├── client/                        # Frontend Single-Domain Client
 │   ├── index.html                 # HTML5 Shell
@@ -146,7 +152,8 @@ chess_project/
     ├── verify-day9.sh             # Automated Day 9 Stale Job Recovery & Scheduler seal script
     ├── verify-day10.sh            # Automated Day 10 Opening Book Catalog seal script
     ├── verify-day11.sh            # Automated Day 11 Interactive Chessboard UI seal script
-    └── verify-day12-14.sh         # Automated Day 12-14 Telemetry, Blunder Tiers & Radar Seal Script
+    ├── verify-day12-14.sh         # Automated Day 12-14 Telemetry, Blunder Tiers & Radar Seal Script
+    └── verify-day15.sh            # Automated Day 15 Personalized Training Puzzle Generator Seal Script
 ```
 
 ---
@@ -221,6 +228,9 @@ npm run verify:day11
 
 # Day 12–14 Real-Time Polling, Blunder Classification & Longitudinal Radar Analytics Verification
 npm run verify:day12-14
+
+# Day 15 Personalized Training Puzzle Generator Verification
+npm run verify:day15
 ```
 
 ### 5. Launch Full Stack (Server + Client)
@@ -250,7 +260,7 @@ npm run dev
 - [x] **Day 12: Real-Time Analysis Polling & Longitudinal Progress Indicators (`@FE`)**
 - [x] **Day 13: Tactical Blunder Classification Tiers & Move Evaluation Navigation (`@FE`)**
 - [x] **Day 14: Longitudinal Analytics Dashboard & Phase-Based CPL Radar Visualizations (`@FE`)**
-- [ ] **Day 15:** Personalized Training Puzzle Generator (`v_training_puzzles`) (`@DB` / `@FE`)
+- [x] **Day 15: Personalized Training Puzzle Generator (`v_training_puzzles`) (`@DB` / `@FE`)**
 - [ ] **Day 16:** Single-Domain Authentication & First-Party Cookie Integration (`@BE` / `@FE`)
 - [ ] **Day 17:** End-to-End Concurrency & Fault-Injection Stress Testing (Chaos Verification)
 - [ ] **Day 18:** Production Cloud Deployment (Vercel Edge + Render + Neon Serverless) & Final Seal

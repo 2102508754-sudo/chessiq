@@ -168,6 +168,70 @@ export default function App() {
     fetchTelemetry();
   }, [fetchTelemetry]);
 
+  // Day 15: Personalized Training Puzzles state & fetch
+  const [personalizedPuzzles, setPersonalizedPuzzles] = useState([]);
+  const [isLoadingPuzzles, setIsLoadingPuzzles] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "puzzles") {
+      setIsLoadingPuzzles(true);
+      api
+        .get("/api/puzzles/personalized?limit=6")
+        .then((res) => {
+          const list = res?.data?.puzzles || res?.puzzles || [];
+          if (Array.isArray(list) && list.length > 0) {
+            setPersonalizedPuzzles(list);
+          }
+        })
+        .catch((err) => {
+          console.warn(
+            "Personalized puzzles fetch failed, showing defaults:",
+            err.message,
+          );
+        })
+        .finally(() => setIsLoadingPuzzles(false));
+    }
+  }, [activeTab]);
+
+  const handleSolvePuzzle = useCallback((p) => {
+    try {
+      const c = new Chess(p.fen);
+      const puzzleGame = {
+        id: "puzzle-" + (p.puzzle_id || p.id || Date.now()),
+        title: `Puzzle: ${p.themes?.[0]?.description || "Tactical Drill"}`,
+        event: `ChessIQ 6NF Puzzle (Rated ${p.rating})`,
+        white: {
+          name: c.turn() === "w" ? "You (to move)" : "Opponent",
+          rating: p.rating,
+          accuracy: 95.0,
+        },
+        black: {
+          name: c.turn() === "b" ? "You (to move)" : "Opponent",
+          rating: p.rating,
+          accuracy: 95.0,
+        },
+        result: "*",
+        eco: "P00",
+        opening: p.themes?.[0]?.theme_code || "Tactics",
+        pgn: "",
+        annotations: {
+          0: {
+            eval: c.turn() === "w" ? 3.5 : -3.5,
+            class: "BEST",
+            comment: p.match_reason || "Find the tactical combination to win.",
+            bestMove: p.moves?.split(" ")[0] || "",
+          },
+        },
+      };
+      setSelectedGame(puzzleGame);
+      setCurrentPlyIndex(0);
+      setBoardOrientation(c.turn() === "w" ? "white" : "black");
+      setActiveTab("analysis");
+    } catch (e) {
+      console.warn("Could not load puzzle into game review:", e);
+    }
+  }, []);
+
   // Parse moves from PGN using chess.js
   const gameMoves = useMemo(() => {
     try {
@@ -1673,141 +1737,237 @@ export default function App() {
                 gap: "16px",
               }}
             >
-              <div
-                style={{
-                  background: "rgba(255, 255, 255, 0.02)",
-                  padding: "20px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <span
+              {personalizedPuzzles.length > 0 ? (
+                personalizedPuzzles.map((p, idx) => {
+                  const mainTheme = p.themes?.[0] || {
+                    theme_code: "tactics",
+                    description: "Tactical Drill",
+                  };
+                  const ratingColor =
+                    p.rating >= 2000
+                      ? "var(--accent-cyan)"
+                      : p.rating >= 1500
+                        ? "var(--accent-amber)"
+                        : "var(--accent-emerald)";
+                  return (
+                    <div
+                      key={p.puzzle_id || p.id || idx}
+                      style={{
+                        background: "rgba(255, 255, 255, 0.02)",
+                        padding: "20px",
+                        borderRadius: "10px",
+                        border: "1px solid var(--border-color)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: "700",
+                              color: "var(--accent-cyan)",
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {mainTheme.theme_code}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              padding: "2px 8px",
+                              background: "rgba(255, 255, 255, 0.06)",
+                              color: ratingColor,
+                              borderRadius: "4px",
+                              fontWeight: "700",
+                              fontFamily: "var(--font-mono)",
+                            }}
+                          >
+                            Rated {p.rating}
+                          </span>
+                        </div>
+                        <h4
+                          style={{
+                            fontSize: "15px",
+                            fontWeight: "700",
+                            marginBottom: "6px",
+                          }}
+                        >
+                          {mainTheme.description}
+                        </h4>
+                        <p
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                            marginBottom: "14px",
+                            lineHeight: "1.5",
+                          }}
+                        >
+                          {p.match_reason ||
+                            "Find the decisive Stockfish engine continuation from this tactical position."}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSolvePuzzle(p)}
+                        className="btn-primary"
+                        style={{
+                          fontSize: "12px",
+                          padding: "6px 14px",
+                          alignSelf: "flex-start",
+                        }}
+                      >
+                        Solve in Game Review →
+                      </button>
+                    </div>
+                  );
+                })
+              ) : (
+                <>
+                  <div
                     style={{
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      color: "var(--accent-rose)",
+                      background: "rgba(255, 255, 255, 0.02)",
+                      padding: "20px",
+                      borderRadius: "10px",
+                      border: "1px solid var(--border-color)",
                     }}
                   >
-                    Tactical Blunder Punisher
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      padding: "2px 8px",
-                      background: "rgba(244, 63, 94, 0.15)",
-                      color: "#fb7185",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    Rated 2100
-                  </span>
-                </div>
-                <h4
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: "700",
-                    marginBottom: "6px",
-                  }}
-                >
-                  Nakamura's Missed Defense
-                </h4>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    marginBottom: "14px",
-                  }}
-                >
-                  After Black played 25... Nxe4?, find White's decisive queen
-                  infiltration to win the game.
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedGame(MASTER_GAMES[0]);
-                    setCurrentPlyIndex(50); // Move 25... Nxe4
-                    setActiveTab("analysis");
-                  }}
-                  className="btn-primary"
-                  style={{ fontSize: "12px", padding: "6px 14px" }}
-                >
-                  Solve in Game Review →
-                </button>
-              </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          color: "var(--accent-rose)",
+                        }}
+                      >
+                        Tactical Blunder Punisher
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          padding: "2px 8px",
+                          background: "rgba(244, 63, 94, 0.15)",
+                          color: "#fb7185",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        Rated 2100
+                      </span>
+                    </div>
+                    <h4
+                      style={{
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      Nakamura's Missed Defense
+                    </h4>
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text-secondary)",
+                        marginBottom: "14px",
+                      }}
+                    >
+                      After Black played 25... Nxe4?, find White's decisive
+                      queen infiltration to win the game.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSelectedGame(MASTER_GAMES[0]);
+                        setCurrentPlyIndex(50); // Move 25... Nxe4
+                        setActiveTab("analysis");
+                      }}
+                      className="btn-primary"
+                      style={{ fontSize: "12px", padding: "6px 14px" }}
+                    >
+                      Solve in Game Review →
+                    </button>
+                  </div>
 
-              <div
-                style={{
-                  background: "rgba(255, 255, 255, 0.02)",
-                  padding: "20px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <span
+                  <div
                     style={{
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      color: "var(--accent-cyan)",
+                      background: "rgba(255, 255, 255, 0.02)",
+                      padding: "20px",
+                      borderRadius: "10px",
+                      border: "1px solid var(--border-color)",
                     }}
                   >
-                    Brilliant Move Spotlight
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      padding: "2px 8px",
-                      background: "rgba(56, 189, 248, 0.15)",
-                      color: "#38bdf8",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    Rated 2500
-                  </span>
-                </div>
-                <h4
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: "700",
-                    marginBottom: "6px",
-                  }}
-                >
-                  Kasparov's Immortal Rook Sacrifice
-                </h4>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    marginBottom: "14px",
-                  }}
-                >
-                  White to move on Move 24. Find the legendary double rook
-                  sacrifice that broke Topalov's defenses.
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedGame(MASTER_GAMES[1]);
-                    setCurrentPlyIndex(46); // Move 23... Qd6
-                    setActiveTab("analysis");
-                  }}
-                  className="btn-primary"
-                  style={{ fontSize: "12px", padding: "6px 14px" }}
-                >
-                  Solve in Game Review →
-                </button>
-              </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          color: "var(--accent-cyan)",
+                        }}
+                      >
+                        Brilliant Move Spotlight
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          padding: "2px 8px",
+                          background: "rgba(56, 189, 248, 0.15)",
+                          color: "#38bdf8",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        Rated 2500
+                      </span>
+                    </div>
+                    <h4
+                      style={{
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      Kasparov's Immortal Rook Sacrifice
+                    </h4>
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text-secondary)",
+                        marginBottom: "14px",
+                      }}
+                    >
+                      White to move on Move 24. Find the legendary double rook
+                      sacrifice that broke Topalov's defenses.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSelectedGame(MASTER_GAMES[1]);
+                        setCurrentPlyIndex(46); // Move 23... Qd6
+                        setActiveTab("analysis");
+                      }}
+                      className="btn-primary"
+                      style={{ fontSize: "12px", padding: "6px 14px" }}
+                    >
+                      Solve in Game Review →
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
