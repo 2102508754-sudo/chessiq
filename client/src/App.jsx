@@ -155,7 +155,10 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
         setCustomPgnInput("");
       }
     } catch (err) {
-      console.warn("Backend upload failed, loading local preview:", err.message);
+      console.warn(
+        "Backend upload failed, loading local preview:",
+        err.message,
+      );
       try {
         const c = new Chess();
         c.loadPgn(customPgnInput);
@@ -1694,13 +1697,24 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
 
                   <button
                     onClick={handlePgnUpload}
-                    disabled={polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING}
+                    disabled={
+                      polling.status === POLLING_STATUS.PROCESSING ||
+                      polling.status === POLLING_STATUS.UPLOADING
+                    }
                     className="btn-primary"
                     style={{
                       padding: "6px 14px",
                       fontSize: "12px",
-                      opacity: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? 0.6 : 1,
-                      cursor: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? "not-allowed" : "pointer",
+                      opacity:
+                        polling.status === POLLING_STATUS.PROCESSING ||
+                        polling.status === POLLING_STATUS.UPLOADING
+                          ? 0.6
+                          : 1,
+                      cursor:
+                        polling.status === POLLING_STATUS.PROCESSING ||
+                        polling.status === POLLING_STATUS.UPLOADING
+                          ? "not-allowed"
+                          : "pointer",
                     }}
                   >
                     {!isAuthenticated

@@ -115,7 +115,14 @@ export default function TrainingDashboard({
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              flexWrap: "wrap",
+            }}
+          >
             <button
               type="button"
               onClick={() => generateNewPuzzles(5)}
@@ -525,4 +532,3 @@ export default function TrainingDashboard({
     </div>
   );
 }
-

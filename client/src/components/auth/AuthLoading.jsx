@@ -22,7 +22,13 @@ export default function AuthLoading({
         margin: "24px auto",
       }}
     >
-      <div style={{ display: "inline-flex", position: "relative", marginBottom: "14px" }}>
+      <div
+        style={{
+          display: "inline-flex",
+          position: "relative",
+          marginBottom: "14px",
+        }}
+      >
         <Shield size={32} color="var(--accent-cyan)" />
         <Loader2
           size={16}

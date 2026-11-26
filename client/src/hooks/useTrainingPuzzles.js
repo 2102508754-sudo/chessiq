@@ -502,20 +502,26 @@ export function useTrainingPuzzles({ enabled = true } = {}) {
     }
   }, [activeIndex]);
 
-  const generateNewPuzzles = useCallback(async (limit = 5) => {
-    if (isGenerating) return;
-    setIsGenerating(true);
-    setFetchError(null);
-    try {
-      const generated = await generateFreshRecommendations(limit);
-      setRawPuzzles(generated);
-      setActiveIndex(0);
-    } catch (err) {
-      setFetchError(err?.message || "Failed to generate new personalized recommendations.");
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [isGenerating]);
+  const generateNewPuzzles = useCallback(
+    async (limit = 5) => {
+      if (isGenerating) return;
+      setIsGenerating(true);
+      setFetchError(null);
+      try {
+        const generated = await generateFreshRecommendations(limit);
+        setRawPuzzles(generated);
+        setActiveIndex(0);
+      } catch (err) {
+        setFetchError(
+          err?.message ||
+            "Failed to generate new personalized recommendations.",
+        );
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [isGenerating],
+  );
 
   return {
     puzzles: filteredPuzzles,
@@ -568,4 +574,3 @@ export function useTrainingPuzzles({ enabled = true } = {}) {
     retrySubmission,
   };
 }
-

@@ -277,4 +277,3 @@ export function AuthProvider({ children, onSessionExpired, onLogoutComplete }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-

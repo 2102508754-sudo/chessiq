@@ -202,7 +202,9 @@ export async function generateFreshRecommendations(limit = 5) {
     : [];
   return rawList
     .map(normalizePuzzleRecommendation)
-    .filter((item) => item !== null && Boolean(item.fen) && item.moves.length > 0);
+    .filter(
+      (item) => item !== null && Boolean(item.fen) && item.moves.length > 0,
+    );
 }
 
 /**
@@ -218,8 +220,10 @@ export async function fetchPuzzleCatalog({
 } = {}) {
   const query = new URLSearchParams();
   if (theme && theme !== "ALL") query.set("theme", theme);
-  if (minRating !== undefined && minRating !== null) query.set("min_rating", String(minRating));
-  if (maxRating !== undefined && maxRating !== null) query.set("max_rating", String(maxRating));
+  if (minRating !== undefined && minRating !== null)
+    query.set("min_rating", String(minRating));
+  if (maxRating !== undefined && maxRating !== null)
+    query.set("max_rating", String(maxRating));
   query.set("limit", String(limit));
   query.set("offset", String(offset));
 
@@ -228,5 +232,7 @@ export async function fetchPuzzleCatalog({
   const rawList = Array.isArray(payload.puzzles) ? payload.puzzles : [];
   return rawList
     .map(normalizePuzzleRecommendation)
-    .filter((item) => item !== null && Boolean(item.fen) && item.moves.length > 0);
+    .filter(
+      (item) => item !== null && Boolean(item.fen) && item.moves.length > 0,
+    );
 }

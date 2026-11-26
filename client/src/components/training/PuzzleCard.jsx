@@ -102,4 +102,3 @@ export default function PuzzleCard({ puzzle, index, isSelected, onSelect }) {
     </button>
   );
 }
-

@@ -36,9 +36,11 @@ const requiredFiles = [
   'client/src/api/auth.js',
   'client/src/api/puzzles.js',
   'client/src/context/AuthContext.jsx',
+  'client/src/context/authConstants.js',
   'client/src/hooks/useAuth.js',
   'client/src/hooks/useTrainingPuzzles.js',
   'client/src/utils/puzzleUtils.js',
+  'client/src/components/auth/AuthLoading.jsx',
   'client/src/components/auth/AuthStatus.jsx',
   'client/src/components/auth/LoginForm.jsx',
   'client/src/components/auth/ProtectedRoute.jsx',
@@ -56,7 +58,7 @@ for (const rel of requiredFiles) {
     throw new Error('Missing required frontend module: ' + rel);
   }
 }
-console.log('✓ All 17 Day 15–16 frontend modules verified present');
+console.log('✓ All 19 Day 15–16 frontend modules verified present');
 
 const appSrc = fs.readFileSync(path.resolve('client/src/App.jsx'), 'utf8');
 for (const token of ['AuthProvider', 'AuthStatus', 'ProtectedRoute', 'TrainingDashboard', 'UserGameHistory']) {
