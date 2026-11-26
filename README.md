@@ -123,7 +123,8 @@ chess_project/
 │       ├── day10-openings.test.js # Opening catalog verification & ACPL exclusion suite
 │       ├── day11-chessboard.test.js # Interactive Chessboard UI & dynamic board flipping suite
 │       ├── day12-14-frontend-analytics.test.js # Real-time polling, blunder tiers & radar analytics suite
-│       └── day15-puzzles.test.js  # Personalized puzzle generator & recommendations test suite
+│       ├── day15-puzzles.test.js  # Personalized puzzle generator & recommendations test suite
+│       └── day17-chaos-stress.test.js # End-to-end concurrency & fault-injection chaos suite
 │
 ├── client/                        # Frontend Single-Domain Client
 │   ├── index.html                 # HTML5 Shell
@@ -285,7 +286,7 @@ npm run dev
 - [x] **Day 14: Longitudinal Analytics Dashboard & Phase-Based CPL Radar Visualizations (`@FE`)**
 - [x] **Day 15: Personalized Training Puzzle Generator (`v_training_puzzles`) (`@DB` / `@FE`)**
 - [ ] **Day 16:** Single-Domain Authentication & First-Party Cookie Integration (`@BE` / `@FE`)
-- [ ] **Day 17:** End-to-End Concurrency & Fault-Injection Stress Testing (Chaos Verification)
+- [x] **Day 17: End-to-End Concurrency & Fault-Injection Stress Testing (Chaos Verification)**
 - [ ] **Day 18:** Production Cloud Deployment (Vercel Edge + Render + Neon Serverless) & Final Seal
 
 ---
