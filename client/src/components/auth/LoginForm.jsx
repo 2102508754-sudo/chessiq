@@ -99,21 +99,20 @@ export default function LoginForm({
       }}
     >
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div
+        <img
+          src="/logo.png"
+          alt="ChessIQ"
           style={{
-            width: "48px",
-            height: "48px",
+            width: "56px",
+            height: "56px",
             borderRadius: "12px",
-            background: "rgba(56, 189, 248, 0.14)",
+            objectFit: "cover",
             border: "1px solid rgba(56, 189, 248, 0.35)",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
+            boxShadow: "0 0 20px rgba(56, 189, 248, 0.2)",
             marginBottom: "12px",
+            background: "#000",
           }}
-        >
-          <Lock size={22} color="var(--accent-cyan)" />
-        </div>
+        />
         <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "6px" }}>
           {mode === "login" ? "Sign In to ChessIQ" : "Create ChessIQ Account"}
         </h2>

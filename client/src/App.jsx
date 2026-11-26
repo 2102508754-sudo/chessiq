@@ -581,20 +581,19 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
+          <img
+            src="/logo.png"
+            alt="ChessIQ Logo"
             style={{
-              width: "44px",
-              height: "44px",
+              width: "48px",
+              height: "48px",
               borderRadius: "10px",
-              background: "linear-gradient(135deg, #38bdf8 0%, #6366f1 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 0 20px rgba(99, 102, 241, 0.4)",
+              objectFit: "cover",
+              border: "1px solid rgba(56, 189, 248, 0.3)",
+              boxShadow: "0 0 20px rgba(56, 189, 248, 0.25)",
+              background: "#000",
             }}
-          >
-            <Crown size={24} color="#0a0c10" />
-          </div>
+          />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <h1
