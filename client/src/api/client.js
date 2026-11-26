@@ -25,6 +25,13 @@ const DEFAULT_TIMEOUT_MS = 15000;
 let lastSessionExpiredDispatchAt = 0;
 
 /**
+ * Resets the 401 session expiration debounce timer (for testing).
+ */
+export function _resetSessionExpiredDebounceForTesting() {
+  lastSessionExpiredDispatchAt = 0;
+}
+
+/**
  * Executes an HTTP request through the single-domain reverse proxy (/api)
  * @param {string} endpoint - API path (e.g. '/api/health')
  * @param {RequestInit & { timeoutMs?: number, suppressAuthEvent?: boolean }} [options]

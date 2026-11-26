@@ -6,9 +6,9 @@
  */
 
 import React, { useEffect } from "react";
-import { Shield } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import LoginForm from "./LoginForm";
+import AuthLoading from "./AuthLoading";
 
 export default function ProtectedRoute({
   destination,
@@ -41,33 +41,7 @@ export default function ProtectedRoute({
   ]);
 
   if (isLoading) {
-    return (
-      <div
-        className="glass-panel"
-        role="status"
-        aria-busy="true"
-        style={{
-          padding: "48px 24px",
-          textAlign: "center",
-          maxWidth: "540px",
-          margin: "24px auto",
-        }}
-      >
-        <Shield
-          size={28}
-          color="var(--accent-cyan)"
-          style={{ marginBottom: "12px" }}
-        />
-        <h3
-          style={{ fontSize: "16px", fontWeight: "700", marginBottom: "6px" }}
-        >
-          Verifying Session Security...
-        </h3>
-        <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-          Checking active first-party session cookie with ChessIQ API.
-        </p>
-      </div>
-    );
+    return <AuthLoading />;
   }
 
   if (!isAuthenticated) {
@@ -87,3 +61,4 @@ export default function ProtectedRoute({
 
   return <>{children}</>;
 }
+

@@ -52,6 +52,7 @@ export function normalizePuzzleRecommendation(raw) {
     category: raw.category || (themes[0]?.theme_code ?? "TACTICAL_TRAINING"),
     description:
       raw.description ||
+      raw.match_reason ||
       p.explanation ||
       themes[0]?.description ||
       "Find the decisive tactical continuation from this game position.",
@@ -66,7 +67,12 @@ export function normalizePuzzleRecommendation(raw) {
     rating:
       p.rating !== undefined && p.rating !== null ? Number(p.rating) : null,
     themes,
-    explanation: raw.explanation || p.explanation || raw.description || null,
+    explanation:
+      raw.explanation ||
+      p.explanation ||
+      raw.match_reason ||
+      raw.description ||
+      null,
   };
 }
 
@@ -171,4 +177,56 @@ export async function submitPuzzleAttempt({
   });
 
   return res?.data || res;
+}
+
+/**
+ * Queries the 1NF tactical themes catalog via GET /api/puzzles/themes.
+ * @param {AbortSignal} [signal]
+ */
+export async function fetchPuzzleThemes(signal) {
+  const res = await api.get("/api/puzzles/themes", { signal });
+  const data = res?.data || res || {};
+  return Array.isArray(data.themes) ? data.themes : [];
+}
+
+/**
+ * Triggers backend stored procedure sp_generate_user_training_recommendations
+ * via POST /api/recommendations/generate and returns normalized recommendations.
+ * @param {number} [limit=5]
+ */
+export async function generateFreshRecommendations(limit = 5) {
+  const res = await api.post("/api/recommendations/generate", { limit });
+  const payload = res?.data || res || {};
+  const rawList = Array.isArray(payload.recommendations)
+    ? payload.recommendations
+    : [];
+  return rawList
+    .map(normalizePuzzleRecommendation)
+    .filter((item) => item !== null && Boolean(item.fen) && item.moves.length > 0);
+}
+
+/**
+ * Fetches puzzle catalog rows directly from GET /api/puzzles (v_training_puzzles).
+ */
+export async function fetchPuzzleCatalog({
+  theme,
+  minRating,
+  maxRating,
+  limit = 20,
+  offset = 0,
+  signal,
+} = {}) {
+  const query = new URLSearchParams();
+  if (theme && theme !== "ALL") query.set("theme", theme);
+  if (minRating !== undefined && minRating !== null) query.set("min_rating", String(minRating));
+  if (maxRating !== undefined && maxRating !== null) query.set("max_rating", String(maxRating));
+  query.set("limit", String(limit));
+  query.set("offset", String(offset));
+
+  const res = await api.get(`/api/puzzles?${query.toString()}`, { signal });
+  const payload = res?.data || res || {};
+  const rawList = Array.isArray(payload.puzzles) ? payload.puzzles : [];
+  return rawList
+    .map(normalizePuzzleRecommendation)
+    .filter((item) => item !== null && Boolean(item.fen) && item.moves.length > 0);
 }

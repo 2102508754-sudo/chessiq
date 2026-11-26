@@ -7,7 +7,11 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { ApiError } from "../api/client";
-import { fetchPersonalizedPuzzles, submitPuzzleAttempt } from "../api/puzzles";
+import {
+  fetchPersonalizedPuzzles,
+  submitPuzzleAttempt,
+  generateFreshRecommendations,
+} from "../api/puzzles";
 import {
   inspectPuzzlePosition,
   evaluatePuzzleMove,
@@ -42,6 +46,7 @@ export function useTrainingPuzzles({ enabled = true } = {}) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [backendEndpointMissing, setBackendEndpointMissing] = useState(false);
 
@@ -497,6 +502,21 @@ export function useTrainingPuzzles({ enabled = true } = {}) {
     }
   }, [activeIndex]);
 
+  const generateNewPuzzles = useCallback(async (limit = 5) => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    setFetchError(null);
+    try {
+      const generated = await generateFreshRecommendations(limit);
+      setRawPuzzles(generated);
+      setActiveIndex(0);
+    } catch (err) {
+      setFetchError(err?.message || "Failed to generate new personalized recommendations.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [isGenerating]);
+
   return {
     puzzles: filteredPuzzles,
     totalUnfilteredCount: rawPuzzles.length,
@@ -532,11 +552,13 @@ export function useTrainingPuzzles({ enabled = true } = {}) {
     },
     isLoading,
     isLoadingMore,
+    isGenerating,
     fetchError,
     backendEndpointMissing,
     hasMore: pagination.hasMore,
     loadMore: () => loadPuzzles({ reset: false }),
     reloadPuzzles: () => loadPuzzles({ reset: true }),
+    generateNewPuzzles,
     selectPuzzle,
     nextPuzzle,
     prevPuzzle,
@@ -546,3 +568,4 @@ export function useTrainingPuzzles({ enabled = true } = {}) {
     retrySubmission,
   };
 }
+

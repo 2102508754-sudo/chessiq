@@ -15,6 +15,7 @@ import {
   Inbox,
   Swords,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import {
   useTrainingPuzzles,
@@ -58,11 +59,13 @@ export default function TrainingDashboard({
     setStatusFilter,
     isLoading,
     isLoadingMore,
+    isGenerating,
     fetchError,
     backendEndpointMissing,
     hasMore,
     loadMore,
     reloadPuzzles,
+    generateNewPuzzles,
     selectPuzzle,
     nextPuzzle,
     prevPuzzle,
@@ -112,26 +115,50 @@ export default function TrainingDashboard({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={reloadPuzzles}
-            disabled={isLoading}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "8px 14px",
-              borderRadius: "8px",
-              background: "rgba(56, 189, 248, 0.12)",
-              border: "1px solid rgba(56, 189, 248, 0.35)",
-              color: "var(--accent-cyan)",
-              fontSize: "12px",
-              fontWeight: "600",
-              cursor: isLoading ? "wait" : "pointer",
-            }}
-          >
-            <RefreshCw size={14} /> Refresh Recommendations
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => generateNewPuzzles(5)}
+              disabled={isLoading || isGenerating}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 14px",
+                borderRadius: "8px",
+                background: "rgba(16, 185, 129, 0.14)",
+                border: "1px solid rgba(16, 185, 129, 0.4)",
+                color: "var(--accent-emerald)",
+                fontSize: "12px",
+                fontWeight: "600",
+                cursor: isLoading || isGenerating ? "wait" : "pointer",
+              }}
+            >
+              <Sparkles size={14} />
+              {isGenerating ? "Generating..." : "Generate Recommendations"}
+            </button>
+
+            <button
+              type="button"
+              onClick={reloadPuzzles}
+              disabled={isLoading || isGenerating}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 14px",
+                borderRadius: "8px",
+                background: "rgba(56, 189, 248, 0.12)",
+                border: "1px solid rgba(56, 189, 248, 0.35)",
+                color: "var(--accent-cyan)",
+                fontSize: "12px",
+                fontWeight: "600",
+                cursor: isLoading || isGenerating ? "wait" : "pointer",
+              }}
+            >
+              <RefreshCw size={14} /> Refresh
+            </button>
+          </div>
         </div>
       </div>
 
@@ -498,3 +525,4 @@ export default function TrainingDashboard({
     </div>
   );
 }
+

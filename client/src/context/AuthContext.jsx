@@ -20,13 +20,9 @@ import {
   registerUser,
   logoutUser,
 } from "../api/auth";
+import { AUTH_STATUS } from "./authConstants";
 
-export const AUTH_STATUS = {
-  LOADING: "LOADING",
-  AUTHENTICATED: "AUTHENTICATED",
-  UNAUTHENTICATED: "UNAUTHENTICATED",
-  EXPIRED: "EXPIRED",
-};
+export { AUTH_STATUS };
 
 export const AuthContext = createContext(null);
 
@@ -281,3 +277,4 @@ export function AuthProvider({ children, onSessionExpired, onLogoutComplete }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+

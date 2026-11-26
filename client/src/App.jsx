@@ -155,10 +155,7 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
         setCustomPgnInput("");
       }
     } catch (err) {
-      console.warn(
-        "Backend upload failed, loading local preview:",
-        err.message,
-      );
+      console.warn("Backend upload failed, loading local preview:", err.message);
       try {
         const c = new Chess();
         c.loadPgn(customPgnInput);
@@ -198,70 +195,6 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
   useEffect(() => {
     fetchTelemetry();
   }, [fetchTelemetry]);
-
-  // Day 15: Personalized Training Puzzles state & fetch
-  const [personalizedPuzzles, setPersonalizedPuzzles] = useState([]);
-  const [isLoadingPuzzles, setIsLoadingPuzzles] = useState(false);
-
-  useEffect(() => {
-    if (activeTab === "puzzles") {
-      setIsLoadingPuzzles(true);
-      api
-        .get("/api/puzzles/personalized?limit=6")
-        .then((res) => {
-          const list = res?.data?.puzzles || res?.puzzles || [];
-          if (Array.isArray(list) && list.length > 0) {
-            setPersonalizedPuzzles(list);
-          }
-        })
-        .catch((err) => {
-          console.warn(
-            "Personalized puzzles fetch failed, showing defaults:",
-            err.message,
-          );
-        })
-        .finally(() => setIsLoadingPuzzles(false));
-    }
-  }, [activeTab]);
-
-  const handleSolvePuzzle = useCallback((p) => {
-    try {
-      const c = new Chess(p.fen);
-      const puzzleGame = {
-        id: "puzzle-" + (p.puzzle_id || p.id || Date.now()),
-        title: `Puzzle: ${p.themes?.[0]?.description || "Tactical Drill"}`,
-        event: `ChessIQ 6NF Puzzle (Rated ${p.rating})`,
-        white: {
-          name: c.turn() === "w" ? "You (to move)" : "Opponent",
-          rating: p.rating,
-          accuracy: 95.0,
-        },
-        black: {
-          name: c.turn() === "b" ? "You (to move)" : "Opponent",
-          rating: p.rating,
-          accuracy: 95.0,
-        },
-        result: "*",
-        eco: "P00",
-        opening: p.themes?.[0]?.theme_code || "Tactics",
-        pgn: "",
-        annotations: {
-          0: {
-            eval: c.turn() === "w" ? 3.5 : -3.5,
-            class: "BEST",
-            comment: p.match_reason || "Find the tactical combination to win.",
-            bestMove: p.moves?.split(" ")[0] || "",
-          },
-        },
-      };
-      setSelectedGame(puzzleGame);
-      setCurrentPlyIndex(0);
-      setBoardOrientation(c.turn() === "w" ? "white" : "black");
-      setActiveTab("analysis");
-    } catch (e) {
-      console.warn("Could not load puzzle into game review:", e);
-    }
-  }, []);
 
   // Parse moves from PGN using chess.js
   const gameMoves = useMemo(() => {
@@ -1761,24 +1694,13 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
 
                   <button
                     onClick={handlePgnUpload}
-                    disabled={
-                      polling.status === POLLING_STATUS.PROCESSING ||
-                      polling.status === POLLING_STATUS.UPLOADING
-                    }
+                    disabled={polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING}
                     className="btn-primary"
                     style={{
                       padding: "6px 14px",
                       fontSize: "12px",
-                      opacity:
-                        polling.status === POLLING_STATUS.PROCESSING ||
-                        polling.status === POLLING_STATUS.UPLOADING
-                          ? 0.6
-                          : 1,
-                      cursor:
-                        polling.status === POLLING_STATUS.PROCESSING ||
-                        polling.status === POLLING_STATUS.UPLOADING
-                          ? "not-allowed"
-                          : "pointer",
+                      opacity: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? 0.6 : 1,
+                      cursor: (polling.status === POLLING_STATUS.PROCESSING || polling.status === POLLING_STATUS.UPLOADING) ? "not-allowed" : "pointer",
                     }}
                   >
                     {!isAuthenticated
