@@ -169,7 +169,8 @@ chess_project/
     ├── verify-day11.sh            # Automated Day 11 Interactive Chessboard UI seal script
     ├── verify-day12-14.sh         # Automated Day 12-14 Telemetry, Blunder Tiers & Radar Seal Script
     ├── verify-day15.sh            # Automated Day 15 Personalized Training Puzzle Generator Seal Script (@DB)
-    └── verify-day15-16.sh         # Automated Day 15-16 Personalized Training & Auth Seal Script (@FE)
+    ├── verify-day15-16.sh         # Automated Day 15-16 Personalized Training & Auth Seal Script (@FE)
+    └── verify-day17.sh            # Automated Day 17 End-to-End Concurrency & Chaos Verification Seal Script
 ```
 
 ---
@@ -250,6 +251,9 @@ npm run verify:day15
 
 # Day 15–16 Personalized Training Puzzles & Single-Domain First-Party Cookie Auth Verification (@FE)
 npm run verify:day15-16
+
+# Day 17 End-to-End Concurrency & Fault-Injection Stress Testing (Chaos Verification)
+npm run verify:day17
 ```
 
 ### 5. Launch Full Stack (Server + Client)
