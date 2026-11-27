@@ -1,10 +1,10 @@
 /**
- * ChessIQ v3.3.0 — Protected User Game History View
- * Day 16 (@FE): Fetches authenticated user's uploaded/analyzed games from GET /api/games
- * and hydrates full 6NF move analyses via GET /api/games/:id into Game Review.
+ * ChessIQ — Grandmaster Editorial Game History (My Games)
+ * Section 6.D: Elegant game registry with subtle row separators, search, filter,
+ * opponent Elo, ECO code, result badges, ACPL, and direct Game Review inspection.
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   History,
   RefreshCw,
@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   Clock,
   ArrowRight,
+  Search,
+  Filter,
 } from "lucide-react";
 import api from "../../api/client";
 
@@ -27,30 +29,25 @@ export default function UserGameHistory({
   const [isLoading, setIsLoading] = useState(false);
   const [loadingGameId, setLoadingGameId] = useState(null);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL"); // "ALL" | "ANALYZED" | "QUEUED"
 
-  const loadHistory = useCallback(
-    async (signal) => {
-      if (!isAuthenticated) return;
-      setIsLoading(true);
-      setError(null);
-      try {
-        const res = await api.get("/api/games", { signal });
-        const data = res?.data || res || {};
-        const list = Array.isArray(data.games)
-          ? data.games
-          : Array.isArray(data)
-            ? data
-            : [];
-        setGames(list);
-      } catch (err) {
-        if (signal?.aborted || err?.name === "AbortError") return;
-        setError(err?.message || "Failed to fetch your game history.");
-      } finally {
-        if (!signal?.aborted) setIsLoading(false);
-      }
-    },
-    [isAuthenticated],
-  );
+  const loadHistory = useCallback(async (signal) => {
+    if (!isAuthenticated) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await api.get("/api/games", { signal });
+      const data = res?.data || res || {};
+      const list = Array.isArray(data.games) ? data.games : Array.isArray(data) ? data : [];
+      setGames(list);
+    } catch (err) {
+      if (signal?.aborted || err?.name === "AbortError") return;
+      setError(err?.message || "Failed to fetch your game history.");
+    } finally {
+      if (!signal?.aborted) setIsLoading(false);
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -73,263 +70,340 @@ export default function UserGameHistory({
     }
   };
 
+  // Filter and search
+  const filteredGames = useMemo(() => {
+    return games.filter((g) => {
+      if (statusFilter === "ANALYZED" && !g.analysis_completed) return false;
+      if (statusFilter === "QUEUED" && g.analysis_completed) return false;
+      if (!searchQuery.trim()) return true;
+
+      const q = searchQuery.toLowerCase();
+      const white = (g.white_player || "").toLowerCase();
+      const black = (g.black_player || "").toLowerCase();
+      const eco = (g.eco_code || "").toLowerCase();
+      return white.includes(q) || black.includes(q) || eco.includes(q);
+    });
+  }, [games, statusFilter, searchQuery]);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-      <div className="glass-panel" style={{ padding: "22px 24px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {/* Editorial Masthead & Filter Bar */}
+      <div className="editorial-card" style={{ padding: "20px 24px" }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: "12px",
+            gap: "14px",
+            marginBottom: "16px",
           }}
         >
           <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginBottom: "4px",
-              }}
-            >
-              <History size={20} color="var(--accent-cyan)" />
-              <h2 style={{ fontSize: "19px", fontWeight: "700" }}>
-                Your Analyzed Game History
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              <History size={18} color="var(--accent-gold)" />
+              <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "20px", fontWeight: "600" }}>
+                My Analyzed Encounters
               </h2>
             </div>
-            <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-              Private session-protected repository of PGNs submitted under your
-              account (<code>v_games</code>).
+            <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+              Private relational 6NF repository of your submitted PGNs and Stockfish NNUE move telemetry (<code>v_games</code>).
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => loadHistory()}
-            disabled={isLoading}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "8px 14px",
-              borderRadius: "8px",
-              background: "rgba(56, 189, 248, 0.12)",
-              border: "1px solid rgba(56, 189, 248, 0.35)",
-              color: "var(--accent-cyan)",
-              fontSize: "12px",
-              fontWeight: "600",
-              cursor: isLoading ? "wait" : "pointer",
-            }}
-          >
-            <RefreshCw size={14} /> Refresh Games
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              type="button"
+              onClick={() => loadHistory()}
+              disabled={isLoading}
+              className="btn-secondary"
+              style={{ padding: "7px 14px", fontSize: "12px" }}
+            >
+              <RefreshCw size={13} className={isLoading ? "animate-spin" : ""} />
+              <span>Refresh Archive</span>
+            </button>
+            {onGoToUpload && (
+              <button
+                type="button"
+                onClick={onGoToUpload}
+                className="btn-primary"
+                style={{ padding: "7px 14px", fontSize: "12px" }}
+              >
+                <Swords size={13} />
+                <span>Upload New PGN</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Search & Filter Controls */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "12px",
+            paddingTop: "14px",
+            borderTop: "1px solid var(--border-subtle)",
+          }}
+        >
+          <div style={{ position: "relative", minWidth: "240px", flex: 1, maxWidth: "380px" }}>
+            <Search
+              size={14}
+              color="var(--text-muted)"
+              style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)" }}
+            />
+            <input
+              type="text"
+              placeholder="Search opponent or ECO code (e.g. B90)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ width: "100%", paddingLeft: "30px", fontSize: "12px" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            {["ALL", "ANALYZED", "QUEUED"].map((tab) => {
+              const isSelected = statusFilter === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setStatusFilter(tab)}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: "4px",
+                    fontSize: "11px",
+                    fontWeight: isSelected ? "600" : "500",
+                    border: isSelected ? "1px solid var(--accent-gold)" : "1px solid var(--border)",
+                    backgroundColor: isSelected ? "var(--accent-gold-light)" : "var(--surface-primary)",
+                    color: isSelected ? "var(--accent-gold)" : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {tab}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
+      {/* Loading state */}
       {isLoading && (
-        <div
-          className="glass-panel"
-          style={{ padding: "40px", textAlign: "center" }}
-        >
-          <Loader2
-            size={26}
-            color="var(--accent-cyan)"
-            style={{ marginBottom: "10px" }}
-          />
+        <div className="editorial-card" style={{ padding: "48px 24px", textAlign: "center" }}>
+          <Loader2 size={24} color="var(--accent-gold)" className="animate-spin" style={{ margin: "0 auto 10px" }} />
           <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-            Loading your game history...
+            Synchronizing game archive with backend views...
           </p>
         </div>
       )}
 
+      {/* Error state */}
       {!isLoading && error && (
         <div
-          className="glass-panel"
+          className="editorial-card"
           role="alert"
           style={{
-            padding: "20px",
-            borderLeft: "4px solid var(--accent-rose)",
+            padding: "16px 20px",
+            borderLeft: "3px solid var(--accent-clay)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            flexWrap: "wrap",
             gap: "12px",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              color: "#fb7185",
-              fontSize: "13px",
-            }}
-          >
-            <AlertTriangle size={18} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--accent-clay)", fontSize: "13px" }}>
+            <AlertTriangle size={16} />
             <span>{error}</span>
           </div>
           <button
             type="button"
             onClick={() => loadHistory()}
-            className="btn-primary"
-            style={{ padding: "6px 14px", fontSize: "12px" }}
+            className="btn-secondary"
+            style={{ padding: "5px 12px", fontSize: "12px" }}
           >
             Retry
           </button>
         </div>
       )}
 
-      {!isLoading && !error && games.length === 0 && (
-        <div
-          className="glass-panel"
-          style={{ padding: "44px 24px", textAlign: "center" }}
-        >
-          <Inbox
-            size={30}
-            color="var(--accent-cyan)"
-            style={{ marginBottom: "10px" }}
-          />
-          <h3
-            style={{ fontSize: "16px", fontWeight: "700", marginBottom: "6px" }}
-          >
-            No Uploaded Games Found
+      {/* Empty State */}
+      {!isLoading && !error && filteredGames.length === 0 && (
+        <div className="editorial-card" style={{ padding: "50px 24px", textAlign: "center" }}>
+          <Inbox size={32} color="var(--accent-gold)" style={{ margin: "0 auto 12px" }} />
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "18px", marginBottom: "6px" }}>
+            {searchQuery ? "No Matching Encounters Found" : "No Analyzed Encounters In Archive"}
           </h3>
-          <p
-            style={{
-              fontSize: "13px",
-              color: "var(--text-secondary)",
-              marginBottom: "16px",
-            }}
-          >
-            Upload a PGN in Game Review to queue it for Stockfish NNUE analysis.
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", maxWidth: "420px", margin: "0 auto 16px" }}>
+            {searchQuery
+              ? "Try adjusting your search criteria or clearing filters."
+              : "Upload a PGN from your matches to initiate automated Stockfish NNUE move evaluation and ACPL tracking."}
           </p>
-          {onGoToUpload && (
+          {onGoToUpload && !searchQuery && (
             <button
               type="button"
               onClick={onGoToUpload}
               className="btn-primary"
-              style={{ padding: "8px 16px", fontSize: "12px" }}
             >
-              <Swords size={14} /> Go to Game Review
+              <Swords size={14} />
+              <span>Submit PGN in Game Review</span>
             </button>
           )}
         </div>
       )}
 
-      {!isLoading && !error && games.length > 0 && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "14px",
-          }}
-        >
-          {games.map((g) => (
-            <div
-              key={g.id}
-              className="glass-panel"
-              style={{
-                padding: "18px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: "700",
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  {g.white_player || "White"} vs {g.black_player || "Black"}
-                </span>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontFamily: "var(--font-mono)",
-                    padding: "2px 6px",
-                    borderRadius: "4px",
-                    background: "rgba(99, 102, 241, 0.16)",
-                    color: "#a5b4fc",
-                  }}
-                >
-                  {g.result || "*"}
-                </span>
-              </div>
+      {/* Game List: Editorial Table with subtle row separators */}
+      {!isLoading && !error && filteredGames.length > 0 && (
+        <div className="editorial-card" style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(200px, 2fr) 90px 100px 110px 120px 110px",
+              padding: "10px 18px",
+              backgroundColor: "var(--surface-secondary)",
+              borderBottom: "1px solid var(--border)",
+              fontSize: "11px",
+              fontWeight: "700",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--text-muted)",
+            }}
+            className="game-history-header"
+          >
+            <div>Matchup</div>
+            <div>Result</div>
+            <div>Opening</div>
+            <div>Precision</div>
+            <div>Status</div>
+            <div style={{ textAlign: "right" }}>Action</div>
+          </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "10px",
-                  fontSize: "12px",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                <span>ECO: {g.eco_code || "A00"}</span>
-                <span>You: {g.user_color || "WHITE"}</span>
-                {g.white_acpl !== null && g.white_acpl !== undefined && (
-                  <span>W ACPL: {g.white_acpl}</span>
-                )}
-                {g.black_acpl !== null && g.black_acpl !== undefined && (
-                  <span>B ACPL: {g.black_acpl}</span>
-                )}
-              </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {filteredGames.map((g, index) => {
+              const isWhite = (g.user_color || "WHITE").toUpperCase() === "WHITE";
+              const userAcpl = isWhite ? g.white_acpl : g.black_acpl;
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  paddingTop: "8px",
-                  borderTop: "1px solid var(--border-color)",
-                }}
-              >
-                <span
+              return (
+                <div
+                  key={g.id || index}
                   style={{
-                    display: "inline-flex",
+                    display: "grid",
+                    gridTemplateColumns: "minmax(200px, 2fr) 90px 100px 110px 120px 110px",
                     alignItems: "center",
-                    gap: "5px",
-                    fontSize: "11px",
-                    color: g.analysis_completed
-                      ? "var(--accent-emerald)"
-                      : "var(--accent-amber)",
+                    padding: "14px 18px",
+                    borderBottom: index < filteredGames.length - 1 ? "1px solid var(--border-subtle)" : "none",
+                    transition: "background-color 0.15s ease",
+                  }}
+                  className="game-history-row"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--surface-hover)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
-                  {g.analysis_completed ? (
-                    <>
-                      <CheckCircle2 size={13} /> Analyzed
-                    </>
-                  ) : (
-                    <>
-                      <Clock size={13} /> Queued / Pending
-                    </>
-                  )}
-                </span>
+                  {/* Matchup */}
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      {g.white_player || "White"} vs {g.black_player || "Black"}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+                      Playing as {g.user_color || "White"}
+                    </div>
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleOpenGame(g.id)}
-                  disabled={loadingGameId === g.id}
-                  className="btn-primary"
-                  style={{ padding: "5px 12px", fontSize: "12px" }}
-                >
-                  {loadingGameId === g.id ? "Opening..." : "Inspect"}{" "}
-                  <ArrowRight size={13} />
-                </button>
-              </div>
-            </div>
-          ))}
+                  {/* Result */}
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: "700",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        backgroundColor: "var(--surface-secondary)",
+                        border: "1px solid var(--border)",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      {g.result || "*"}
+                    </span>
+                  </div>
+
+                  {/* Opening */}
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontFamily: "var(--font-mono)",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      {g.eco_code || "A00"}
+                    </span>
+                  </div>
+
+                  {/* Precision / ACPL */}
+                  <div>
+                    {userAcpl != null ? (
+                      <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--text-primary)" }}>
+                        {userAcpl} <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>ACPL</span>
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>—</span>
+                    )}
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        fontSize: "11px",
+                        color: g.analysis_completed ? "var(--accent-sage)" : "var(--accent-gold)",
+                      }}
+                    >
+                      {g.analysis_completed ? (
+                        <>
+                          <CheckCircle2 size={13} />
+                          <span>Analyzed</span>
+                        </>
+                      ) : (
+                        <>
+                          <Clock size={13} />
+                          <span>Queued</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Action */}
+                  <div style={{ textAlign: "right" }}>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenGame(g.id)}
+                      disabled={loadingGameId === g.id}
+                      className="btn-secondary"
+                      style={{ padding: "4px 10px", fontSize: "11px" }}
+                    >
+                      {loadingGameId === g.id ? (
+                        "Loading..."
+                      ) : (
+                        <>
+                          <span>Inspect</span>
+                          <ArrowRight size={11} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

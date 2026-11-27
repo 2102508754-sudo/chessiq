@@ -236,7 +236,7 @@ export default function LongitudinalRadarChart({
                     key={idx}
                     d={path}
                     fill="none"
-                    stroke="rgba(255, 255, 255, 0.08)"
+                    stroke="var(--border)"
                     strokeWidth="1"
                     strokeDasharray={
                       idx === gridLevels.length - 1 ? "none" : "2,2"
@@ -262,7 +262,7 @@ export default function LongitudinalRadarChart({
                     y1={center}
                     x2={spokeEnd.x}
                     y2={spokeEnd.y}
-                    stroke="rgba(255, 255, 255, 0.12)"
+                    stroke="var(--border)"
                     strokeWidth="1"
                   />
                 );
@@ -271,8 +271,8 @@ export default function LongitudinalRadarChart({
               {/* Benchmark Polygon */}
               <path
                 d={benchmarkPolygonPath}
-                fill="rgba(148, 163, 184, 0.1)"
-                stroke="rgba(148, 163, 184, 0.4)"
+                fill="rgba(148, 163, 184, 0.08)"
+                stroke="var(--text-muted)"
                 strokeWidth="1.5"
                 strokeDasharray="4,4"
               />
@@ -280,11 +280,10 @@ export default function LongitudinalRadarChart({
               {/* Active Game Polygon */}
               <path
                 d={currentPolygonPath}
-                fill="rgba(56, 189, 248, 0.25)"
-                stroke="var(--accent-cyan)"
+                fill="var(--accent-gold-light)"
+                stroke="var(--accent-gold)"
                 strokeWidth="2.5"
                 style={{
-                  filter: "drop-shadow(0 0 8px rgba(56, 189, 248, 0.4))",
                   transition: "all 0.4s ease",
                 }}
               />
@@ -311,8 +310,8 @@ export default function LongitudinalRadarChart({
                       cx={pt.x}
                       cy={pt.y}
                       r={isHovered ? 6 : 4}
-                      fill="var(--accent-cyan)"
-                      stroke="#0f172a"
+                      fill="var(--accent-gold)"
+                      stroke="var(--surface-primary)"
                       strokeWidth="2"
                     />
                   </g>
@@ -338,7 +337,7 @@ export default function LongitudinalRadarChart({
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fill={
-                      isHovered ? "var(--accent-cyan)" : "var(--text-secondary)"
+                      isHovered ? "var(--accent-gold)" : "var(--text-secondary)"
                     }
                     fontSize={isHovered ? "12px" : "11px"}
                     fontWeight={isHovered ? "800" : "600"}
@@ -358,10 +357,11 @@ export default function LongitudinalRadarChart({
                   fontSize: "12px",
                   padding: "6px 12px",
                   borderRadius: "6px",
-                  background: "rgba(0, 0, 0, 0.7)",
-                  border: "1px solid var(--border-glow)",
-                  color: "var(--accent-cyan)",
+                  background: "var(--surface-primary)",
+                  border: "1px solid var(--border)",
+                  color: "var(--accent-gold)",
                   textAlign: "center",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
                 {radarData.find((d) => d.axis === hoveredAxis)?.label}:{" "}
@@ -379,11 +379,11 @@ export default function LongitudinalRadarChart({
             {/* Opening Phase Card */}
             <div
               style={{
-                background: "rgba(255, 255, 255, 0.02)",
+                background: "var(--surface-secondary)",
                 padding: "14px 18px",
                 borderRadius: "10px",
-                border: "1px solid var(--border-color)",
-                borderLeft: "4px solid var(--accent-emerald)",
+                border: "1px solid var(--border)",
+                borderLeft: "4px solid var(--accent-sage)",
               }}
             >
               <div
@@ -400,7 +400,8 @@ export default function LongitudinalRadarChart({
                   style={{
                     fontSize: "18px",
                     fontWeight: "800",
-                    color: "var(--accent-emerald)",
+                    color: "var(--accent-sage)",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   {phaseStats[GAME_PHASES.OPENING]?.acpl || 0}{" "}
@@ -427,11 +428,11 @@ export default function LongitudinalRadarChart({
             {/* Middlegame Phase Card */}
             <div
               style={{
-                background: "rgba(255, 255, 255, 0.02)",
+                background: "var(--surface-secondary)",
                 padding: "14px 18px",
                 borderRadius: "10px",
-                border: "1px solid var(--border-color)",
-                borderLeft: "4px solid var(--accent-amber)",
+                border: "1px solid var(--border)",
+                borderLeft: "4px solid var(--color-inaccuracy)",
               }}
             >
               <div
@@ -448,7 +449,8 @@ export default function LongitudinalRadarChart({
                   style={{
                     fontSize: "18px",
                     fontWeight: "800",
-                    color: "var(--accent-amber)",
+                    color: "var(--color-inaccuracy)",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   {phaseStats[GAME_PHASES.MIDDLEGAME]?.acpl || 0}{" "}
@@ -475,11 +477,11 @@ export default function LongitudinalRadarChart({
             {/* Endgame Phase Card */}
             <div
               style={{
-                background: "rgba(255, 255, 255, 0.02)",
+                background: "var(--surface-secondary)",
                 padding: "14px 18px",
                 borderRadius: "10px",
-                border: "1px solid var(--border-color)",
-                borderLeft: "4px solid var(--accent-cyan)",
+                border: "1px solid var(--border)",
+                borderLeft: "4px solid var(--accent-gold)",
               }}
             >
               <div
@@ -496,7 +498,8 @@ export default function LongitudinalRadarChart({
                   style={{
                     fontSize: "18px",
                     fontWeight: "800",
-                    color: "var(--accent-cyan)",
+                    color: "var(--accent-gold)",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
                   {phaseStats[GAME_PHASES.ENDGAME]?.acpl || 0}{" "}
