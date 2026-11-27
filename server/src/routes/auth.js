@@ -9,6 +9,7 @@
  */
 
 const express = require("express");
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -17,6 +18,16 @@ const logger = require("../utils/logger");
 const AppError = require("../utils/AppError");
 const { query, withTransaction } = require("../db/pool");
 const authenticate = require("../middleware/authenticate");
+const {
+  generateOAuthSecurityParams,
+  getProviderConfig,
+  isProviderConfigured,
+  getAvailableProviders,
+  buildRedirectUri,
+  buildAuthorizationUrl,
+  exchangeCodeForToken,
+  fetchOAuthUserProfile,
+} = require("../services/oauth2");
 
 const router = express.Router();
 
@@ -369,6 +380,269 @@ router.post("/logout", (req, res) => {
     status: "success",
     message: "Logged out successfully.",
   });
+});
+
+// ---------------------------------------------------------------------------
+// OAuth 2.0 Authorization Code + PKCE Routes
+// ---------------------------------------------------------------------------
+
+const OAUTH_STATE_COOKIE = "chessiq_oauth_state";
+
+/**
+ * Resolves the origin base URL from the incoming request (supports reverse proxies).
+ */
+function resolveRequestOrigin(req) {
+  const proto = req.headers["x-forwarded-proto"] || req.protocol || "http";
+  const host = req.headers["x-forwarded-host"] || req.get("host");
+  return host ? `${proto}://${host}` : env.FRONTEND_URL;
+}
+
+/**
+ * Generates a unique username by appending a short random suffix if taken.
+ */
+async function resolveUniqueUsername(client, baseUsername) {
+  const existing = await client.query(
+    "SELECT 1 FROM user_usernames WHERE username = $1",
+    [baseUsername],
+  );
+  if (existing.rows.length === 0) return baseUsername;
+
+  for (let i = 0; i < 5; i++) {
+    const candidate = `${baseUsername.slice(0, 23)}_${crypto.randomBytes(2).toString("hex")}`;
+    const check = await client.query(
+      "SELECT 1 FROM user_usernames WHERE username = $1",
+      [candidate],
+    );
+    if (check.rows.length === 0) return candidate;
+  }
+  return `player_${crypto.randomBytes(4).toString("hex")}`;
+}
+
+/**
+ * GET /api/auth/oauth/providers
+ * Returns configured OAuth 2.0 providers available for sign-in.
+ */
+router.get("/oauth/providers", (req, res) => {
+  return res.status(200).json({
+    status: "success",
+    data: {
+      providers: getAvailableProviders(),
+    },
+  });
+});
+
+/**
+ * GET /api/auth/oauth/:provider
+ * Initiates the OAuth 2.0 Authorization Code + PKCE flow.
+ */
+router.get("/oauth/:provider", (req, res, next) => {
+  try {
+    const providerId = String(req.params.provider || "").toLowerCase();
+    const cfg = getProviderConfig(providerId);
+    if (!cfg) {
+      throw AppError.notFound(`Unsupported OAuth2 provider: ${providerId}`);
+    }
+
+    if (!isProviderConfigured(providerId)) {
+      throw new AppError(
+        "OAUTH_PROVIDER_NOT_CONFIGURED",
+        `${cfg.name} OAuth 2.0 is not configured on this server.`,
+        503,
+      );
+    }
+
+    const { state, codeVerifier, codeChallenge } = generateOAuthSecurityParams();
+    const redirectUri = buildRedirectUri(providerId, resolveRequestOrigin(req));
+    const authUrl = buildAuthorizationUrl(providerId, {
+      state,
+      codeChallenge,
+      redirectUri,
+    });
+
+    const isProduction = env.NODE_ENV === "production";
+    res.cookie(
+      OAUTH_STATE_COOKIE,
+      JSON.stringify({ provider: providerId, state, codeVerifier, redirectUri }),
+      {
+        httpOnly: true,
+        signed: true,
+        sameSite: "Lax",
+        secure: isProduction,
+        maxAge: 5 * 60 * 1000, // 5 minutes
+      },
+    );
+
+    return res.redirect(302, authUrl);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/**
+ * GET /api/auth/oauth/:provider/callback
+ * Handles OAuth 2.0 provider callback, verifies CSRF state, exchanges code with PKCE,
+ * provisions or links the 6NF user account, and sets the chessiq_session cookie.
+ */
+router.get("/oauth/:provider/callback", async (req, res, next) => {
+  const providerId = String(req.params.provider || "").toLowerCase();
+  const frontendBase = env.FRONTEND_URL.replace(/\/+$/, "");
+
+  const redirectWithError = (errorMsg) => {
+    res.clearCookie(OAUTH_STATE_COOKIE);
+    const target = `${frontendBase}/?oauth_error=${encodeURIComponent(errorMsg)}`;
+    return res.redirect(302, target);
+  };
+
+  try {
+    const cfg = getProviderConfig(providerId);
+    if (!cfg) {
+      return redirectWithError(`Unsupported OAuth2 provider: ${providerId}`);
+    }
+
+    if (req.query.error) {
+      return redirectWithError(
+        String(req.query.error_description || req.query.error),
+      );
+    }
+
+    const { code, state } = req.query;
+    const rawStateCookie = req.signedCookies?.[OAUTH_STATE_COOKIE];
+    res.clearCookie(OAUTH_STATE_COOKIE);
+
+    if (!rawStateCookie || !code || !state) {
+      return redirectWithError("Invalid or expired OAuth2 session state.");
+    }
+
+    let storedState;
+    try {
+      storedState = JSON.parse(rawStateCookie);
+    } catch (_) {
+      return redirectWithError("Malformed OAuth2 state cookie.");
+    }
+
+    if (
+      storedState.provider !== providerId ||
+      !storedState.state ||
+      storedState.state.length !== String(state).length ||
+      !crypto.timingSafeEqual(
+        Buffer.from(storedState.state),
+        Buffer.from(String(state)),
+      )
+    ) {
+      return redirectWithError("OAuth2 CSRF state mismatch.");
+    }
+
+    const redirectUri =
+      storedState.redirectUri ||
+      buildRedirectUri(providerId, resolveRequestOrigin(req));
+
+    const { accessToken } = await exchangeCodeForToken(providerId, {
+      code: String(code),
+      redirectUri,
+      codeVerifier: storedState.codeVerifier,
+    });
+
+    const profile = await fetchOAuthUserProfile(providerId, accessToken);
+
+    let user;
+    await withTransaction(async (client) => {
+      // 1. Check existing OAuth identity link
+      const existingOAuth = await client.query(
+        `SELECT user_id FROM user_oauth_identities
+         WHERE provider = $1 AND provider_user_id = $2`,
+        [profile.provider, profile.providerUserId],
+      );
+
+      let userId;
+      if (existingOAuth.rows.length > 0) {
+        userId = existingOAuth.rows[0].user_id;
+      } else {
+        // 2. Check existing account by verified email and link OAuth identity
+        const existingEmail = profile.emailVerified
+          ? await client.query(
+              "SELECT user_id FROM user_emails WHERE email = $1",
+              [profile.email],
+            )
+          : { rows: [] };
+
+        if (existingEmail.rows.length > 0) {
+          userId = existingEmail.rows[0].user_id;
+          await client.query(
+            `INSERT INTO user_oauth_identities (user_id, provider, provider_user_id)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (user_id, provider) DO NOTHING`,
+            [userId, profile.provider, profile.providerUserId],
+          );
+        } else {
+          // 3. Provision new 6NF user account (passwordless OAuth2 user)
+          const userRes = await client.query(
+            "INSERT INTO users DEFAULT VALUES RETURNING id",
+          );
+          userId = userRes.rows[0].id;
+
+          const uniqueUsername = await resolveUniqueUsername(
+            client,
+            profile.username,
+          );
+
+          await client.query(
+            "INSERT INTO user_usernames (user_id, username) VALUES ($1, $2)",
+            [userId, uniqueUsername],
+          );
+          await client.query(
+            "INSERT INTO user_emails (user_id, email) VALUES ($1, $2)",
+            [userId, profile.email],
+          );
+          await client.query(
+            `INSERT INTO user_ratings (user_id, chess_rating, valid_during)
+             VALUES ($1, $2, tstzrange(NOW(), NULL, '[)'))`,
+            [userId, 1200],
+          );
+          await client.query(
+            "INSERT INTO user_created_at (user_id) VALUES ($1)",
+            [userId],
+          );
+          await client.query(
+            "INSERT INTO user_updated_at (user_id) VALUES ($1)",
+            [userId],
+          );
+          await client.query(
+            `INSERT INTO user_oauth_identities (user_id, provider, provider_user_id)
+             VALUES ($1, $2, $3)`,
+            [userId, profile.provider, profile.providerUserId],
+          );
+        }
+      }
+
+      const profileRes = await client.query(
+        "SELECT id, username, email, chess_rating FROM v_users WHERE id = $1",
+        [userId],
+      );
+      const row = profileRes.rows[0];
+      user = {
+        id: row.id,
+        username: row.username,
+        email: row.email,
+        chess_rating: row.chess_rating ?? null,
+      };
+    });
+
+    const token = signToken(user);
+    res.cookie("chessiq_session", token, cookieOptions());
+
+    logger.info(
+      { userId: user.id, provider: providerId },
+      "User authenticated via OAuth 2.0",
+    );
+
+    return res.redirect(302, `${frontendBase}/?oauth=success`);
+  } catch (err) {
+    logger.error(
+      { err: err.message, provider: providerId },
+      "OAuth 2.0 callback error",
+    );
+    return redirectWithError("OAuth 2.0 authentication failed. Please try again.");
+  }
 });
 
 module.exports = router;
