@@ -14,8 +14,13 @@ const { openingCatalog } = require("../services/openingCatalog");
 const { pool, query, withTransaction } = require("../db/pool");
 const logger = require("../utils/logger");
 const AppError = require("../utils/AppError");
+const authenticate = require("../middleware/authenticate");
 
 const router = express.Router();
+
+// Apply optional authentication to all game routes — req.user is populated
+// when a valid chessiq_session cookie is present (Day 16).
+router.use(authenticate);
 
 /**
  * POST /api/games/upload
@@ -55,10 +60,9 @@ router.post("/upload", async (req, res, next) => {
     const { headers, moves, totalPlies, moveSignature, rawPgn } = parsed;
 
     // --- Player Color Resolution ---
-    // NOTE: Auth is not implemented yet (Day 16). For now, we use a temporary
-    // user resolution: if the request has req.user (from auth middleware),
-    // use it. Otherwise, require user_color or account_handle explicitly,
-    // or fall back to a dev user for testing.
+    // req.user is populated by the optional authenticate middleware (Day 16).
+    // When authenticated, the user's identity is used to resolve player color.
+    // Anonymous uploads still work but require an explicit user_color or account_handle.
     const userId = req.user?.id || null;
     const username = req.user?.username || "";
 
