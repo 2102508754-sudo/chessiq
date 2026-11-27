@@ -200,6 +200,10 @@ app.use("/api/puzzles", puzzlesRouter);
 const recommendationsRouter = require("./routes/recommendations");
 app.use("/api/recommendations", recommendationsRouter);
 
+// Day 16: Single-Domain Authentication & First-Party Cookie Session (§8.1)
+const authRouter = require("./routes/auth");
+app.use("/api/auth", authRouter);
+
 // 10. 404 Route Fallback
 app.use((req, res, next) => {
   next(AppError.notFound(`Route not found: ${req.method} ${req.originalUrl}`));

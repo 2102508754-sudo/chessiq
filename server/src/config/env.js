@@ -112,6 +112,13 @@ const envSchema = z.object({
     .refine((val) => !isNaN(val) && val >= 1 && val <= 16, {
       message: "MAX_CONCURRENT_JOBS must be between 1 and 16",
     }),
+
+  // Optional OAuth 2.0 Providers (Google & GitHub)
+  OAUTH_CALLBACK_BASE_URL: z.string().url().optional(),
+  OAUTH_GOOGLE_CLIENT_ID: z.string().optional(),
+  OAUTH_GOOGLE_CLIENT_SECRET: z.string().optional(),
+  OAUTH_GITHUB_CLIENT_ID: z.string().optional(),
+  OAUTH_GITHUB_CLIENT_SECRET: z.string().optional(),
 });
 
 let env;

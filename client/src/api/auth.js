@@ -95,3 +95,29 @@ export async function registerUser({
 export async function logoutUser() {
   return api.post("/api/auth/logout", {});
 }
+
+/**
+ * Fetches configured OAuth 2.0 providers from the backend.
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<Array<{ id: string, name: string }>>}
+ */
+export async function fetchOAuthProviders(signal) {
+  try {
+    const res = await api.get("/api/auth/oauth/providers", {
+      signal,
+      suppressAuthEvent: true,
+    });
+    return res?.data?.providers || res?.providers || [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Returns the same-origin URL that initiates the OAuth 2.0 Authorization Code flow.
+ * @param {string} provider
+ * @returns {string}
+ */
+export function getOAuthStartUrl(provider) {
+  return `/api/auth/oauth/${encodeURIComponent(provider)}`;
+}

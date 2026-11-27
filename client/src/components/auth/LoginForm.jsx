@@ -4,7 +4,7 @@
  * using browser-managed first-party HttpOnly session cookies.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Lock,
   Mail,
@@ -18,6 +18,7 @@ import {
   ServerCrash,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { fetchOAuthProviders, getOAuthStartUrl } from "../../api/auth";
 
 export default function LoginForm({
   destinationLabel = null,
@@ -41,6 +42,31 @@ export default function LoginForm({
   const [password, setPassword] = useState("");
   const [chessRating, setChessRating] = useState("1500");
   const [localError, setLocalError] = useState(null);
+  const [oauthProviders, setOauthProviders] = useState([]);
+  const [oauthRedirectError, setOauthRedirectError] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchOAuthProviders(controller.signal).then((providers) => {
+      if (!controller.signal.aborted && Array.isArray(providers)) {
+        setOauthProviders(providers);
+      }
+    });
+
+    if (typeof window !== "undefined" && window.location?.search) {
+      const params = new URLSearchParams(window.location.search);
+      const errParam = params.get("oauth_error");
+      if (errParam) {
+        setOauthRedirectError(errParam);
+        params.delete("oauth_error");
+        const nextSearch = params.toString();
+        const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash || ""}`;
+        window.history.replaceState({}, "", nextUrl);
+      }
+    }
+
+    return () => controller.abort();
+  }, []);
 
   const switchMode = (nextMode) => {
     setMode(nextMode);
@@ -86,7 +112,7 @@ export default function LoginForm({
     }
   };
 
-  const activeError = localError || authError;
+  const activeError = localError || oauthRedirectError || authError;
 
   return (
     <div
@@ -536,6 +562,81 @@ export default function LoginForm({
           )}
         </button>
       </form>
+
+      {oauthProviders.length > 0 && (
+        <div style={{ marginTop: "18px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              marginBottom: "12px",
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                height: "1px",
+                background: "var(--border-color)",
+              }}
+            />
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: "600",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--text-muted)",
+              }}
+            >
+              Or continue with
+            </span>
+            <div
+              style={{
+                flex: 1,
+                height: "1px",
+                background: "var(--border-color)",
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                oauthProviders.length > 1 ? "1fr 1fr" : "1fr",
+              gap: "10px",
+            }}
+          >
+            {oauthProviders.map((provider) => (
+              <button
+                key={provider.id}
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  window.location.assign(getOAuthStartUrl(provider.id));
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-color)",
+                  background: "rgba(255, 255, 255, 0.04)",
+                  color: "var(--text-primary)",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  cursor: isSubmitting ? "wait" : "pointer",
+                }}
+              >
+                <span>{provider.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div
         style={{

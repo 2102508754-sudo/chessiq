@@ -285,7 +285,7 @@ npm run dev
 - [x] **Day 13: Tactical Blunder Classification Tiers & Move Evaluation Navigation (`@FE`)**
 - [x] **Day 14: Longitudinal Analytics Dashboard & Phase-Based CPL Radar Visualizations (`@FE`)**
 - [x] **Day 15: Personalized Training Puzzle Generator (`v_training_puzzles`) (`@DB` / `@FE`)**
-- [ ] **Day 16:** Single-Domain Authentication & First-Party Cookie Integration (`@BE` / `@FE`)
+- [x] **Day 16: Single-Domain Authentication & First-Party Cookie Integration (`@BE` / `@FE`)**
 - [x] **Day 17: End-to-End Concurrency & Fault-Injection Stress Testing (Chaos Verification)**
 - [ ] **Day 18:** Production Cloud Deployment (Vercel Edge + Render + Neon Serverless) & Final Seal
 
