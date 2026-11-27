@@ -24,8 +24,10 @@ function authenticate(req, res, next) {
   const token = req.signedCookies?.chessiq_session;
 
   if (!token) {
-    // No cookie — anonymous request; proceed without user context
-    req.user = null;
+    // If user was already attached upstream (e.g. test harness / auth gateway), preserve it
+    if (!req.user) {
+      req.user = null;
+    }
     return next();
   }
 
@@ -60,6 +62,10 @@ function authenticate(req, res, next) {
  * Throws 401 UNAUTHORIZED if no valid session cookie is present.
  */
 authenticate.required = function requireAuth(req, res, next) {
+  if (req.user) {
+    return next();
+  }
+
   const token = req.signedCookies?.chessiq_session;
 
   if (!token) {
