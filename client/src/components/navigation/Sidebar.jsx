@@ -36,9 +36,27 @@ export default function Sidebar({
   const navItems = [
     { key: "overview", label: "Overview", icon: Compass, badge: null },
     { key: "analysis", label: "Game Review", icon: Swords, badge: "Hero" },
-    { key: "history", label: "My Games", icon: History, badge: null, protected: true },
-    { key: "insights", label: "Player Insights", icon: BarChart3, badge: null, protected: true },
-    { key: "puzzles", label: "Training", icon: Target, badge: "New", protected: true },
+    {
+      key: "history",
+      label: "My Games",
+      icon: History,
+      badge: null,
+      protected: true,
+    },
+    {
+      key: "insights",
+      label: "Player Insights",
+      icon: BarChart3,
+      badge: null,
+      protected: true,
+    },
+    {
+      key: "puzzles",
+      label: "Training",
+      icon: Target,
+      badge: "New",
+      protected: true,
+    },
   ];
 
   return (
@@ -107,7 +125,9 @@ export default function Sidebar({
                 }}
               />
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
                   <span
                     style={{
                       fontFamily: "var(--font-serif)",
@@ -149,7 +169,14 @@ export default function Sidebar({
           </div>
 
           {/* Navigation Links */}
-          <nav style={{ padding: "14px 10px", display: "flex", flexDirection: "column", gap: "3px" }}>
+          <nav
+            style={{
+              padding: "14px 10px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "3px",
+            }}
+          >
             <div
               style={{
                 padding: "6px 10px 4px",
@@ -181,8 +208,12 @@ export default function Sidebar({
                     padding: "9px 12px",
                     borderRadius: "6px",
                     border: "none",
-                    background: isActive ? "var(--surface-secondary)" : "transparent",
-                    color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                    background: isActive
+                      ? "var(--surface-secondary)"
+                      : "transparent",
+                    color: isActive
+                      ? "var(--text-primary)"
+                      : "var(--text-secondary)",
                     cursor: "pointer",
                     textAlign: "left",
                     transition: "all 0.15s ease",
@@ -190,7 +221,8 @@ export default function Sidebar({
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.backgroundColor = "var(--surface-hover)";
+                      e.currentTarget.style.backgroundColor =
+                        "var(--surface-hover)";
                       e.currentTarget.style.color = "var(--text-primary)";
                     }
                   }}
@@ -201,10 +233,18 @@ export default function Sidebar({
                     }
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
                     <Icon
                       size={16}
-                      color={isActive ? "var(--accent-gold)" : "var(--text-muted)"}
+                      color={
+                        isActive ? "var(--accent-gold)" : "var(--text-muted)"
+                      }
                     />
                     <span
                       style={{
@@ -217,7 +257,13 @@ export default function Sidebar({
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
                     {item.badge && (
                       <span
                         style={{
@@ -256,7 +302,12 @@ export default function Sidebar({
         </div>
 
         {/* Bottom Section: Profile & System Controls */}
-        <div style={{ borderTop: "1px solid var(--border-subtle)", padding: "14px 12px" }}>
+        <div
+          style={{
+            borderTop: "1px solid var(--border-subtle)",
+            padding: "14px 12px",
+          }}
+        >
           {/* Quick Settings & Theme Row */}
           <div
             style={{
@@ -317,7 +368,14 @@ export default function Sidebar({
                 border: "1px solid var(--border)",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  minWidth: 0,
+                }}
+              >
                 <div
                   style={{
                     width: "28px",
@@ -375,7 +433,11 @@ export default function Sidebar({
               type="button"
               onClick={() => onSelectTab("auth")}
               className="btn-secondary"
-              style={{ width: "100%", justifyContent: "center", padding: "7px 12px" }}
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                padding: "7px 12px",
+              }}
             >
               <LogIn size={14} color="var(--accent-gold)" />
               <span>Sign In / Register</span>

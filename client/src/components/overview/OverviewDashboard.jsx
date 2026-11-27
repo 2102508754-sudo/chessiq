@@ -86,7 +86,10 @@ export default function OverviewDashboard({
       wins,
       draws,
       losses,
-      avgAccuracy: accCount > 0 ? (totalAcc / accCount).toFixed(1) : (selectedGame?.white?.accuracy || 92.4),
+      avgAccuracy:
+        accCount > 0
+          ? (totalAcc / accCount).toFixed(1)
+          : selectedGame?.white?.accuracy || 92.4,
       avgAcpl: acplCount > 0 ? Math.round(totalAcpl / acplCount) : 24,
     };
   }, [games, selectedGame]);
@@ -98,7 +101,8 @@ export default function OverviewDashboard({
         className="editorial-card"
         style={{
           padding: "32px 36px",
-          background: "linear-gradient(180deg, var(--surface-primary) 0%, var(--surface-secondary) 100%)",
+          background:
+            "linear-gradient(180deg, var(--surface-primary) 0%, var(--surface-secondary) 100%)",
           border: "1px solid var(--border)",
           position: "relative",
           overflow: "hidden",
@@ -133,7 +137,8 @@ export default function OverviewDashboard({
               marginBottom: "10px",
             }}
           >
-            Welcome back, {isAuthenticated && user ? user.username : "Grandmaster"}
+            Welcome back,{" "}
+            {isAuthenticated && user ? user.username : "Grandmaster"}
           </h1>
 
           <p
@@ -144,8 +149,9 @@ export default function OverviewDashboard({
               marginBottom: "20px",
             }}
           >
-            Your Stockfish 16.1 NNUE analysis engine and relational 6NF repository are active.
-            Review recent tactical performances, track ACPL trajectory, and train against personalized weak motifs.
+            Your Stockfish 16.1 NNUE analysis engine and relational 6NF
+            repository are active. Review recent tactical performances, track
+            ACPL trajectory, and train against personalized weak motifs.
           </p>
 
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -181,7 +187,14 @@ export default function OverviewDashboard({
         }}
       >
         <div>
-          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
+          <div
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--text-muted)",
+            }}
+          >
             Games Reviewed
           </div>
           <div
@@ -194,13 +207,31 @@ export default function OverviewDashboard({
           >
             {stats.total}
           </div>
-          <div style={{ fontSize: "11px", color: "var(--accent-sage)", marginTop: "2px" }}>
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--accent-sage)",
+              marginTop: "2px",
+            }}
+          >
             Indexed in 6NF schema
           </div>
         </div>
 
-        <div style={{ borderLeft: "1px solid var(--border-subtle)", paddingLeft: "20px" }}>
-          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
+        <div
+          style={{
+            borderLeft: "1px solid var(--border-subtle)",
+            paddingLeft: "20px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--text-muted)",
+            }}
+          >
             Average Accuracy
           </div>
           <div
@@ -213,13 +244,31 @@ export default function OverviewDashboard({
           >
             {stats.avgAccuracy}%
           </div>
-          <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--text-secondary)",
+              marginTop: "2px",
+            }}
+          >
             Top-tier precision
           </div>
         </div>
 
-        <div style={{ borderLeft: "1px solid var(--border-subtle)", paddingLeft: "20px" }}>
-          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
+        <div
+          style={{
+            borderLeft: "1px solid var(--border-subtle)",
+            paddingLeft: "20px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--text-muted)",
+            }}
+          >
             Average ACPL
           </div>
           <div
@@ -232,13 +281,31 @@ export default function OverviewDashboard({
           >
             {stats.avgAcpl}
           </div>
-          <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--text-secondary)",
+              marginTop: "2px",
+            }}
+          >
             Centipawn loss / ply
           </div>
         </div>
 
-        <div style={{ borderLeft: "1px solid var(--border-subtle)", paddingLeft: "20px" }}>
-          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
+        <div
+          style={{
+            borderLeft: "1px solid var(--border-subtle)",
+            paddingLeft: "20px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--text-muted)",
+            }}
+          >
             Win / Draw / Loss
           </div>
           <div
@@ -250,9 +317,15 @@ export default function OverviewDashboard({
             }}
           >
             <span style={{ color: "var(--accent-sage)" }}>{stats.wins}W</span>
-            <span style={{ margin: "0 6px", color: "var(--text-muted)" }}>/</span>
-            <span style={{ color: "var(--text-secondary)" }}>{stats.draws}D</span>
-            <span style={{ margin: "0 6px", color: "var(--text-muted)" }}>/</span>
+            <span style={{ margin: "0 6px", color: "var(--text-muted)" }}>
+              /
+            </span>
+            <span style={{ color: "var(--text-secondary)" }}>
+              {stats.draws}D
+            </span>
+            <span style={{ margin: "0 6px", color: "var(--text-muted)" }}>
+              /
+            </span>
             <span style={{ color: "var(--accent-clay)" }}>{stats.losses}L</span>
           </div>
         </div>
@@ -280,7 +353,13 @@ export default function OverviewDashboard({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <History size={16} color="var(--accent-gold)" />
-              <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "18px", fontWeight: "600" }}>
+              <h2
+                style={{
+                  fontFamily: "var(--font-serif)",
+                  fontSize: "18px",
+                  fontWeight: "600",
+                }}
+              >
                 Recent Encounters
               </h2>
             </div>
@@ -295,39 +374,56 @@ export default function OverviewDashboard({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {(games && games.length > 0 ? games.slice(0, 4) : [selectedGame]).filter(Boolean).map((g, idx) => (
-              <div
-                key={g.id || idx}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "12px 6px",
-                  borderBottom: idx < 3 ? "1px solid var(--border-subtle)" : "none",
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
-                    {g.white_player || g.white?.name || "White"} vs {g.black_player || g.black?.name || "Black"}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                    ECO: {g.eco_code || g.eco || "A00"} • Result: {g.result || "*"}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onSelectGame) onSelectGame(g);
-                    onNavigateToTab("analysis");
+            {(games && games.length > 0 ? games.slice(0, 4) : [selectedGame])
+              .filter(Boolean)
+              .map((g, idx) => (
+                <div
+                  key={g.id || idx}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "12px 6px",
+                    borderBottom:
+                      idx < 3 ? "1px solid var(--border-subtle)" : "none",
                   }}
-                  className="btn-ghost"
-                  style={{ fontSize: "12px", color: "var(--accent-gold)" }}
                 >
-                  Review <ArrowRight size={12} />
-                </button>
-              </div>
-            ))}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      {g.white_player || g.white?.name || "White"} vs{" "}
+                      {g.black_player || g.black?.name || "Black"}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "var(--text-secondary)",
+                        marginTop: "2px",
+                      }}
+                    >
+                      ECO: {g.eco_code || g.eco || "A00"} • Result:{" "}
+                      {g.result || "*"}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onSelectGame) onSelectGame(g);
+                      onNavigateToTab("analysis");
+                    }}
+                    className="btn-ghost"
+                    style={{ fontSize: "12px", color: "var(--accent-gold)" }}
+                  >
+                    Review <ArrowRight size={12} />
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -345,7 +441,13 @@ export default function OverviewDashboard({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Target size={16} color="var(--accent-gold)" />
-              <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "18px", fontWeight: "600" }}>
+              <h2
+                style={{
+                  fontFamily: "var(--font-serif)",
+                  fontSize: "18px",
+                  fontWeight: "600",
+                }}
+              >
                 Tactical Weakness Focus
               </h2>
             </div>
@@ -359,12 +461,22 @@ export default function OverviewDashboard({
             </button>
           </div>
 
-          <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: "16px" }}>
-            The backend telemetry view <code>v_training_recommendations</code> correlates your missed opportunities
-            and tactical oversights across opening, middlegame, and endgame phases.
+          <p
+            style={{
+              fontSize: "13px",
+              color: "var(--text-secondary)",
+              lineHeight: 1.5,
+              marginBottom: "16px",
+            }}
+          >
+            The backend telemetry view <code>v_training_recommendations</code>{" "}
+            correlates your missed opportunities and tactical oversights across
+            opening, middlegame, and endgame phases.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
             <div
               style={{
                 padding: "10px 14px",
@@ -377,14 +489,24 @@ export default function OverviewDashboard({
               }}
             >
               <div>
-                <div style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-primary)" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    color: "var(--text-primary)",
+                  }}
+                >
                   Pin & Skewer Exploitation
                 </div>
-                <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                <div
+                  style={{ fontSize: "11px", color: "var(--text-secondary)" }}
+                >
                   Occurring primarily in complex Queen-side transitions
                 </div>
               </div>
-              <span className="badge-classification badge-inaccuracy">High Priority</span>
+              <span className="badge-classification badge-inaccuracy">
+                High Priority
+              </span>
             </div>
 
             <div
@@ -399,10 +521,18 @@ export default function OverviewDashboard({
               }}
             >
               <div>
-                <div style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-primary)" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    color: "var(--text-primary)",
+                  }}
+                >
                   Back-Rank Tactical Escapes
                 </div>
-                <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                <div
+                  style={{ fontSize: "11px", color: "var(--text-secondary)" }}
+                >
                   Rook endgames with restricted king mobility
                 </div>
               </div>

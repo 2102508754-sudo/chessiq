@@ -124,7 +124,13 @@ export default function LoginForm({
         >
           {mode === "login" ? "Sign In to ChessIQ" : "Create ChessIQ Account"}
         </h2>
-        <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
+        <p
+          style={{
+            fontSize: "13px",
+            color: "var(--text-secondary)",
+            lineHeight: "1.5",
+          }}
+        >
           {destinationLabel
             ? `Authentication is required to access ${destinationLabel}.`
             : "Access your analyzed games, longitudinal radar telemetry, and personalized training puzzles."}
@@ -187,7 +193,9 @@ export default function LoginForm({
             background:
               mode === "register" ? "var(--surface-primary)" : "transparent",
             color:
-              mode === "register" ? "var(--accent-gold)" : "var(--text-secondary)",
+              mode === "register"
+                ? "var(--accent-gold)"
+                : "var(--text-secondary)",
             border:
               mode === "register"
                 ? "1px solid var(--accent-gold)"
@@ -243,8 +251,8 @@ export default function LoginForm({
           <ServerCrash size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
           <span>
             Backend authentication routes (<code>/api/auth/login</code>,{" "}
-            <code>/api/auth/me</code>) returned HTTP 404 and are awaiting
-            Day 16 backend route deployment.
+            <code>/api/auth/me</code>) returned HTTP 404 and are awaiting Day 16
+            backend route deployment.
           </span>
         </div>
       )}
@@ -272,7 +280,10 @@ export default function LoginForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+      >
         {mode === "login" ? (
           <div>
             <label
@@ -291,7 +302,12 @@ export default function LoginForm({
               <User
                 size={15}
                 color="var(--text-muted)"
-                style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
+                style={{
+                  position: "absolute",
+                  left: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }}
               />
               <input
                 id="chessiq-login-id"
@@ -333,7 +349,12 @@ export default function LoginForm({
                 <User
                   size={15}
                   color="var(--text-muted)"
-                  style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
                 />
                 <input
                   id="chessiq-reg-username"
@@ -374,7 +395,12 @@ export default function LoginForm({
                 <Mail
                   size={15}
                   color="var(--text-muted)"
-                  style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
                 />
                 <input
                   id="chessiq-reg-email"
@@ -451,12 +477,19 @@ export default function LoginForm({
             <Lock
               size={15}
               color="var(--text-muted)"
-              style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+              }}
             />
             <input
               id="chessiq-auth-password"
               type="password"
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              autoComplete={
+                mode === "login" ? "current-password" : "new-password"
+              }
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -525,4 +558,3 @@ export default function LoginForm({
     </div>
   );
 }
-

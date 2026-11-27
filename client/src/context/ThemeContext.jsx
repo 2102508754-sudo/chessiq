@@ -4,7 +4,13 @@
  * Enforces zero localStorage token access for strict Day 16 compliance.
  */
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 
 const ThemeContext = createContext({
   theme: "light",
@@ -17,7 +23,10 @@ export function ThemeProvider({ children }) {
     if (typeof window !== "undefined") {
       const saved = document.documentElement.getAttribute("data-theme");
       if (saved === "dark" || saved === "light") return saved;
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
         return "dark";
       }
     }
@@ -50,7 +59,9 @@ export function ThemeProvider({ children }) {
     [theme],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

@@ -116,7 +116,14 @@ export default function Topbar({
       </div>
 
       {/* Right: Quick Action Strip */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          flexWrap: "wrap",
+        }}
+      >
         {/* Live Stockfish Engine Badge */}
         <div
           style={{
@@ -147,7 +154,9 @@ export default function Topbar({
             }}
           />
           <Cpu size={12} color="var(--accent-gold)" />
-          <span style={{ fontFamily: "var(--font-mono)", fontWeight: "600" }}>NNUE 16.1</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: "600" }}>
+            NNUE 16.1
+          </span>
         </div>
 
         {/* PGN Upload Action */}
@@ -163,18 +172,21 @@ export default function Topbar({
         </button>
 
         {/* Board Flip Quick Control (Only on Game Review / Puzzles) */}
-        {(activeTab === "analysis" || activeTab === "puzzles") && onFlipBoard && (
-          <button
-            type="button"
-            onClick={onFlipBoard}
-            className="btn-ghost"
-            style={{ padding: "6px 10px", fontSize: "12px" }}
-            title={`Flip board to ${boardOrientation === "white" ? "Black" : "White"} (Shortcut: F)`}
-          >
-            <ArrowLeftRight size={13} />
-            <span style={{ textTransform: "capitalize" }}>{boardOrientation}</span>
-          </button>
-        )}
+        {(activeTab === "analysis" || activeTab === "puzzles") &&
+          onFlipBoard && (
+            <button
+              type="button"
+              onClick={onFlipBoard}
+              className="btn-ghost"
+              style={{ padding: "6px 10px", fontSize: "12px" }}
+              title={`Flip board to ${boardOrientation === "white" ? "Black" : "White"} (Shortcut: F)`}
+            >
+              <ArrowLeftRight size={13} />
+              <span style={{ textTransform: "capitalize" }}>
+                {boardOrientation}
+              </span>
+            </button>
+          )}
 
         {/* Audio Synthesizer Toggle */}
         {onToggleSound && (
@@ -183,7 +195,9 @@ export default function Topbar({
             onClick={onToggleSound}
             className="btn-ghost"
             style={{ padding: "6px 8px" }}
-            title={isSoundEnabled ? "Sound enabled (Mute)" : "Sound muted (Enable)"}
+            title={
+              isSoundEnabled ? "Sound enabled (Mute)" : "Sound muted (Enable)"
+            }
           >
             {isSoundEnabled ? (
               <Volume2 size={15} color="var(--accent-gold)" />
@@ -201,7 +215,11 @@ export default function Topbar({
           style={{ padding: "6px 8px" }}
           title={`Switch to ${theme === "light" ? "Dark" : "Light"} theme`}
         >
-          {theme === "light" ? <Moon size={15} /> : <Sun size={15} color="var(--accent-gold)" />}
+          {theme === "light" ? (
+            <Moon size={15} />
+          ) : (
+            <Sun size={15} color="var(--accent-gold)" />
+          )}
         </button>
 
         {/* Studio Settings Trigger */}

@@ -32,22 +32,29 @@ export default function UserGameHistory({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL"); // "ALL" | "ANALYZED" | "QUEUED"
 
-  const loadHistory = useCallback(async (signal) => {
-    if (!isAuthenticated) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await api.get("/api/games", { signal });
-      const data = res?.data || res || {};
-      const list = Array.isArray(data.games) ? data.games : Array.isArray(data) ? data : [];
-      setGames(list);
-    } catch (err) {
-      if (signal?.aborted || err?.name === "AbortError") return;
-      setError(err?.message || "Failed to fetch your game history.");
-    } finally {
-      if (!signal?.aborted) setIsLoading(false);
-    }
-  }, [isAuthenticated]);
+  const loadHistory = useCallback(
+    async (signal) => {
+      if (!isAuthenticated) return;
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/api/games", { signal });
+        const data = res?.data || res || {};
+        const list = Array.isArray(data.games)
+          ? data.games
+          : Array.isArray(data)
+            ? data
+            : [];
+        setGames(list);
+      } catch (err) {
+        if (signal?.aborted || err?.name === "AbortError") return;
+        setError(err?.message || "Failed to fetch your game history.");
+      } finally {
+        if (!signal?.aborted) setIsLoading(false);
+      }
+    },
+    [isAuthenticated],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -100,14 +107,28 @@ export default function UserGameHistory({
           }}
         >
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "4px",
+              }}
+            >
               <History size={18} color="var(--accent-gold)" />
-              <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "20px", fontWeight: "600" }}>
+              <h2
+                style={{
+                  fontFamily: "var(--font-serif)",
+                  fontSize: "20px",
+                  fontWeight: "600",
+                }}
+              >
                 My Analyzed Encounters
               </h2>
             </div>
             <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-              Private relational 6NF repository of your submitted PGNs and Stockfish NNUE move telemetry (<code>v_games</code>).
+              Private relational 6NF repository of your submitted PGNs and
+              Stockfish NNUE move telemetry (<code>v_games</code>).
             </p>
           </div>
 
@@ -119,7 +140,10 @@ export default function UserGameHistory({
               className="btn-secondary"
               style={{ padding: "7px 14px", fontSize: "12px" }}
             >
-              <RefreshCw size={13} className={isLoading ? "animate-spin" : ""} />
+              <RefreshCw
+                size={13}
+                className={isLoading ? "animate-spin" : ""}
+              />
               <span>Refresh Archive</span>
             </button>
             {onGoToUpload && (
@@ -148,11 +172,23 @@ export default function UserGameHistory({
             borderTop: "1px solid var(--border-subtle)",
           }}
         >
-          <div style={{ position: "relative", minWidth: "240px", flex: 1, maxWidth: "380px" }}>
+          <div
+            style={{
+              position: "relative",
+              minWidth: "240px",
+              flex: 1,
+              maxWidth: "380px",
+            }}
+          >
             <Search
               size={14}
               color="var(--text-muted)"
-              style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)" }}
+              style={{
+                position: "absolute",
+                left: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+              }}
             />
             <input
               type="text"
@@ -176,9 +212,15 @@ export default function UserGameHistory({
                     borderRadius: "4px",
                     fontSize: "11px",
                     fontWeight: isSelected ? "600" : "500",
-                    border: isSelected ? "1px solid var(--accent-gold)" : "1px solid var(--border)",
-                    backgroundColor: isSelected ? "var(--accent-gold-light)" : "var(--surface-primary)",
-                    color: isSelected ? "var(--accent-gold)" : "var(--text-secondary)",
+                    border: isSelected
+                      ? "1px solid var(--accent-gold)"
+                      : "1px solid var(--border)",
+                    backgroundColor: isSelected
+                      ? "var(--accent-gold-light)"
+                      : "var(--surface-primary)",
+                    color: isSelected
+                      ? "var(--accent-gold)"
+                      : "var(--text-secondary)",
                     cursor: "pointer",
                   }}
                 >
@@ -192,8 +234,16 @@ export default function UserGameHistory({
 
       {/* Loading state */}
       {isLoading && (
-        <div className="editorial-card" style={{ padding: "48px 24px", textAlign: "center" }}>
-          <Loader2 size={24} color="var(--accent-gold)" className="animate-spin" style={{ margin: "0 auto 10px" }} />
+        <div
+          className="editorial-card"
+          style={{ padding: "48px 24px", textAlign: "center" }}
+        >
+          <Loader2
+            size={24}
+            color="var(--accent-gold)"
+            className="animate-spin"
+            style={{ margin: "0 auto 10px" }}
+          />
           <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
             Synchronizing game archive with backend views...
           </p>
@@ -214,7 +264,15 @@ export default function UserGameHistory({
             gap: "12px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--accent-clay)", fontSize: "13px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              color: "var(--accent-clay)",
+              fontSize: "13px",
+            }}
+          >
             <AlertTriangle size={16} />
             <span>{error}</span>
           </div>
@@ -231,12 +289,34 @@ export default function UserGameHistory({
 
       {/* Empty State */}
       {!isLoading && !error && filteredGames.length === 0 && (
-        <div className="editorial-card" style={{ padding: "50px 24px", textAlign: "center" }}>
-          <Inbox size={32} color="var(--accent-gold)" style={{ margin: "0 auto 12px" }} />
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "18px", marginBottom: "6px" }}>
-            {searchQuery ? "No Matching Encounters Found" : "No Analyzed Encounters In Archive"}
+        <div
+          className="editorial-card"
+          style={{ padding: "50px 24px", textAlign: "center" }}
+        >
+          <Inbox
+            size={32}
+            color="var(--accent-gold)"
+            style={{ margin: "0 auto 12px" }}
+          />
+          <h3
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "18px",
+              marginBottom: "6px",
+            }}
+          >
+            {searchQuery
+              ? "No Matching Encounters Found"
+              : "No Analyzed Encounters In Archive"}
           </h3>
-          <p style={{ fontSize: "13px", color: "var(--text-secondary)", maxWidth: "420px", margin: "0 auto 16px" }}>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "var(--text-secondary)",
+              maxWidth: "420px",
+              margin: "0 auto 16px",
+            }}
+          >
             {searchQuery
               ? "Try adjusting your search criteria or clearing filters."
               : "Upload a PGN from your matches to initiate automated Stockfish NNUE move evaluation and ACPL tracking."}
@@ -260,7 +340,8 @@ export default function UserGameHistory({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(200px, 2fr) 90px 100px 110px 120px 110px",
+              gridTemplateColumns:
+                "minmax(200px, 2fr) 90px 100px 110px 120px 110px",
               padding: "10px 18px",
               backgroundColor: "var(--surface-secondary)",
               borderBottom: "1px solid var(--border)",
@@ -282,7 +363,8 @@ export default function UserGameHistory({
 
           <div style={{ display: "flex", flexDirection: "column" }}>
             {filteredGames.map((g, index) => {
-              const isWhite = (g.user_color || "WHITE").toUpperCase() === "WHITE";
+              const isWhite =
+                (g.user_color || "WHITE").toUpperCase() === "WHITE";
               const userAcpl = isWhite ? g.white_acpl : g.black_acpl;
 
               return (
@@ -290,15 +372,20 @@ export default function UserGameHistory({
                   key={g.id || index}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "minmax(200px, 2fr) 90px 100px 110px 120px 110px",
+                    gridTemplateColumns:
+                      "minmax(200px, 2fr) 90px 100px 110px 120px 110px",
                     alignItems: "center",
                     padding: "14px 18px",
-                    borderBottom: index < filteredGames.length - 1 ? "1px solid var(--border-subtle)" : "none",
+                    borderBottom:
+                      index < filteredGames.length - 1
+                        ? "1px solid var(--border-subtle)"
+                        : "none",
                     transition: "background-color 0.15s ease",
                   }}
                   className="game-history-row"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--surface-hover)";
+                    e.currentTarget.style.backgroundColor =
+                      "var(--surface-hover)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "transparent";
@@ -306,10 +393,22 @@ export default function UserGameHistory({
                 >
                   {/* Matchup */}
                   <div>
-                    <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        color: "var(--text-primary)",
+                      }}
+                    >
                       {g.white_player || "White"} vs {g.black_player || "Black"}
                     </div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "var(--text-muted)",
+                        marginTop: "2px",
+                      }}
+                    >
                       Playing as {g.user_color || "White"}
                     </div>
                   </div>
@@ -348,11 +447,29 @@ export default function UserGameHistory({
                   {/* Precision / ACPL */}
                   <div>
                     {userAcpl != null ? (
-                      <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--text-primary)" }}>
-                        {userAcpl} <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>ACPL</span>
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontFamily: "var(--font-mono)",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {userAcpl}{" "}
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          ACPL
+                        </span>
                       </span>
                     ) : (
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>—</span>
+                      <span
+                        style={{ fontSize: "11px", color: "var(--text-muted)" }}
+                      >
+                        —
+                      </span>
                     )}
                   </div>
 
@@ -364,7 +481,9 @@ export default function UserGameHistory({
                         alignItems: "center",
                         gap: "5px",
                         fontSize: "11px",
-                        color: g.analysis_completed ? "var(--accent-sage)" : "var(--accent-gold)",
+                        color: g.analysis_completed
+                          ? "var(--accent-sage)"
+                          : "var(--accent-gold)",
                       }}
                     >
                       {g.analysis_completed ? (

@@ -36,8 +36,18 @@ export default function SettingsModal({
   if (!isOpen) return null;
 
   const boardOptions = [
-    { key: "grandmaster", name: "Grandmaster Wood", dark: "#9B8061", light: "#E9DFC9" },
-    { key: "emerald", name: "Classic Emerald", dark: "#779556", light: "#eaebd0" },
+    {
+      key: "grandmaster",
+      name: "Grandmaster Wood",
+      dark: "#9B8061",
+      light: "#E9DFC9",
+    },
+    {
+      key: "emerald",
+      name: "Classic Emerald",
+      dark: "#779556",
+      light: "#eaebd0",
+    },
     { key: "marine", name: "Ocean Marine", dark: "#4a75a0", light: "#cddbe8" },
     { key: "slate", name: "Slate Modern", dark: "#475569", light: "#cbd5e1" },
   ];
@@ -91,8 +101,15 @@ export default function SettingsModal({
             >
               Studio Preferences
             </h2>
-            <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-              Configure your visual aesthetics, board finishes, and audio feedback.
+            <p
+              style={{
+                fontSize: "12px",
+                color: "var(--text-secondary)",
+                marginTop: "2px",
+              }}
+            >
+              Configure your visual aesthetics, board finishes, and audio
+              feedback.
             </p>
           </div>
           <button
@@ -107,7 +124,14 @@ export default function SettingsModal({
         </div>
 
         {/* Modal Content */}
-        <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div
+          style={{
+            padding: "20px 22px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+          }}
+        >
           {/* 1. Theme Selection */}
           <div>
             <label
@@ -123,7 +147,13 @@ export default function SettingsModal({
             >
               Interface Theme
             </label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setTheme("light")}
@@ -133,18 +163,32 @@ export default function SettingsModal({
                   gap: "10px",
                   padding: "12px 14px",
                   borderRadius: "8px",
-                  backgroundColor: theme === "light" ? "var(--surface-secondary)" : "var(--surface-primary)",
-                  border: theme === "light" ? "2px solid var(--accent-gold)" : "1px solid var(--border)",
+                  backgroundColor:
+                    theme === "light"
+                      ? "var(--surface-secondary)"
+                      : "var(--surface-primary)",
+                  border:
+                    theme === "light"
+                      ? "2px solid var(--accent-gold)"
+                      : "1px solid var(--border)",
                   cursor: "pointer",
                   textAlign: "left",
                 }}
               >
                 <Sun size={18} color="var(--accent-gold)" />
                 <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      color: "var(--text-primary)",
+                    }}
+                  >
                     Warm Parchment
                   </div>
-                  <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                  <div
+                    style={{ fontSize: "11px", color: "var(--text-secondary)" }}
+                  >
                     Light Editorial
                   </div>
                 </div>
@@ -159,18 +203,32 @@ export default function SettingsModal({
                   gap: "10px",
                   padding: "12px 14px",
                   borderRadius: "8px",
-                  backgroundColor: theme === "dark" ? "var(--surface-secondary)" : "var(--surface-primary)",
-                  border: theme === "dark" ? "2px solid var(--accent-gold)" : "1px solid var(--border)",
+                  backgroundColor:
+                    theme === "dark"
+                      ? "var(--surface-secondary)"
+                      : "var(--surface-primary)",
+                  border:
+                    theme === "dark"
+                      ? "2px solid var(--accent-gold)"
+                      : "1px solid var(--border)",
                   cursor: "pointer",
                   textAlign: "left",
                 }}
               >
                 <Moon size={18} color="var(--accent-gold)" />
                 <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      color: "var(--text-primary)",
+                    }}
+                  >
                     Vintage Obsidian
                   </div>
-                  <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                  <div
+                    style={{ fontSize: "11px", color: "var(--text-secondary)" }}
+                  >
                     Dark Charcoal
                   </div>
                 </div>
@@ -194,7 +252,13 @@ export default function SettingsModal({
               >
                 Board Finish & Squares
               </label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "8px",
+                }}
+              >
                 {boardOptions.map((opt) => {
                   const isSelected = boardThemeKey === opt.key;
                   return (
@@ -208,8 +272,12 @@ export default function SettingsModal({
                         gap: "8px",
                         padding: "8px 10px",
                         borderRadius: "6px",
-                        backgroundColor: isSelected ? "var(--surface-secondary)" : "var(--surface-primary)",
-                        border: isSelected ? "2px solid var(--accent-gold)" : "1px solid var(--border)",
+                        backgroundColor: isSelected
+                          ? "var(--surface-secondary)"
+                          : "var(--surface-primary)",
+                        border: isSelected
+                          ? "2px solid var(--accent-gold)"
+                          : "1px solid var(--border)",
                         cursor: "pointer",
                         textAlign: "left",
                       }}
@@ -262,7 +330,9 @@ export default function SettingsModal({
             >
               Interactive Feedback
             </label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
               {onToggleSound && (
                 <div
                   style={{
@@ -275,18 +345,36 @@ export default function SettingsModal({
                     border: "1px solid var(--border)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
                     {isSoundEnabled ? (
                       <Volume2 size={16} color="var(--accent-gold)" />
                     ) : (
                       <VolumeX size={16} color="var(--text-muted)" />
                     )}
                     <div>
-                      <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          color: "var(--text-primary)",
+                        }}
+                      >
                         Synthesized Chess Audio
                       </div>
-                      <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                        Zero-latency audio for moves, captures, checks, and castles.
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--text-secondary)",
+                        }}
+                      >
+                        Zero-latency audio for moves, captures, checks, and
+                        castles.
                       </div>
                     </div>
                   </div>
@@ -313,13 +401,30 @@ export default function SettingsModal({
                     border: "1px solid var(--border)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
                     <Navigation size={16} color="var(--accent-sage)" />
                     <div>
-                      <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          color: "var(--text-primary)",
+                        }}
+                      >
                         Engine Suggestion Arrows
                       </div>
-                      <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--text-secondary)",
+                        }}
+                      >
                         Highlight Stockfish NNUE's top move and blunder threats.
                       </div>
                     </div>
@@ -349,11 +454,20 @@ export default function SettingsModal({
               }}
             >
               <div>
-                <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                <div
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: "var(--text-primary)",
+                  }}
+                >
                   {user.username}
                 </div>
-                <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                  {user.email || "Registered Master Account"} • {user.chess_rating || 1500} Elo
+                <div
+                  style={{ fontSize: "11px", color: "var(--text-secondary)" }}
+                >
+                  {user.email || "Registered Master Account"} •{" "}
+                  {user.chess_rating || 1500} Elo
                 </div>
               </div>
               <button
@@ -363,7 +477,11 @@ export default function SettingsModal({
                   onClose();
                 }}
                 className="btn-secondary"
-                style={{ padding: "5px 12px", fontSize: "12px", color: "var(--accent-clay)" }}
+                style={{
+                  padding: "5px 12px",
+                  fontSize: "12px",
+                  color: "var(--accent-clay)",
+                }}
               >
                 <LogOut size={13} />
                 <span>Sign Out</span>
@@ -383,7 +501,15 @@ export default function SettingsModal({
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "var(--text-muted)" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+            }}
+          >
             <ShieldCheck size={13} color="var(--accent-sage)" />
             <span>Grandmaster Editorial • v3.3.0</span>
           </div>

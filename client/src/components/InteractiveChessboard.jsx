@@ -260,11 +260,7 @@ export default function InteractiveChessboard({
         currentMove.classification === "MISTAKE") &&
       lastMoveSquares
     ) {
-      arrows.push([
-        lastMoveSquares.from,
-        lastMoveSquares.to,
-        "#AE5E55",
-      ]); // Muted Blunder Red
+      arrows.push([lastMoveSquares.from, lastMoveSquares.to, "#AE5E55"]); // Muted Blunder Red
     }
 
     return arrows;

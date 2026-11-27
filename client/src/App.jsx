@@ -108,7 +108,8 @@ export default function App() {
 }
 
 function ChessIQDashboard({ activeTab, setActiveTab }) {
-  const { isAuthenticated, user, intendedDestination, setIntendedDestination } = useAuth();
+  const { isAuthenticated, user, intendedDestination, setIntendedDestination } =
+    useAuth();
   const [selectedGame, setSelectedGame] = useState(MASTER_GAMES[0]);
   const [currentPlyIndex, setCurrentPlyIndex] = useState(0);
   const [boardOrientation, setBoardOrientation] = useState("white");
@@ -128,7 +129,9 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
           const gameRes = await api.get(`/api/games/${jobData.game_id}`);
           const data = gameRes?.data || gameRes;
           if (data?.game) {
-            setSelectedGame(buildReviewedGameModel(data.game, data.moves || []));
+            setSelectedGame(
+              buildReviewedGameModel(data.game, data.moves || []),
+            );
             setCurrentPlyIndex(0);
           }
         }
@@ -159,7 +162,10 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
         setCustomPgnInput("");
       }
     } catch (err) {
-      console.warn("Backend upload failed, loading local preview:", err.message);
+      console.warn(
+        "Backend upload failed, loading local preview:",
+        err.message,
+      );
       try {
         const c = new Chess();
         c.loadPgn(customPgnInput);
@@ -458,7 +464,9 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
 
           {/* TAB 1: GAME REVIEW & INTERACTIVE ADVANTAGE DASHBOARD */}
           {activeTab === "analysis" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+            >
               {/* Day 12: Real-Time Analysis Progress HUD */}
               <AnalysisProgressBar
                 status={polling.status}
@@ -539,7 +547,11 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
               >
                 {/* LEFT COLUMN: BOARD, EVAL BAR & CONTROLS */}
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                  }}
                 >
                   {/* ADVANTAGE BANNER (EDITORIAL GRANDMASTER) */}
                   <div
@@ -553,7 +565,11 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                     }}
                   >
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
                     >
                       <div
                         style={{
@@ -564,14 +580,14 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                             advantage.side === "white"
                               ? "var(--board-light)"
                               : advantage.side === "black"
-                              ? "var(--surface-tertiary)"
-                              : "var(--surface-secondary)",
+                                ? "var(--surface-tertiary)"
+                                : "var(--surface-secondary)",
                           color:
                             advantage.side === "white"
                               ? "#292923"
                               : advantage.side === "black"
-                              ? "#F5F1E8"
-                              : "var(--text-secondary)",
+                                ? "#F5F1E8"
+                                : "var(--text-secondary)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -583,8 +599,8 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                         {advantage.side === "white"
                           ? "♔"
                           : advantage.side === "black"
-                          ? "♚"
-                          : "⚖️"}
+                            ? "♚"
+                            : "⚖️"}
                       </div>
                       <div>
                         <div
@@ -750,8 +766,12 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                           alignItems: "center",
                           gap: "6px",
                         }}
-                        title={isPlaying ? "Pause (Space)" : "Auto Play (Space)"}
-                        aria-label={isPlaying ? "Pause playback" : "Auto play moves"}
+                        title={
+                          isPlaying ? "Pause (Space)" : "Auto Play (Space)"
+                        }
+                        aria-label={
+                          isPlaying ? "Pause playback" : "Auto play moves"
+                        }
                       >
                         {isPlaying ? <Pause size={16} /> : <Play size={16} />}
                         <span style={{ fontSize: "12px" }}>
@@ -835,10 +855,17 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
 
                 {/* RIGHT COLUMN: ACCURACY CARD, EVALUATION GRAPH & MOVE LIST */}
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                  }}
                 >
                   {/* EDITORIAL MATCH & ACCURACY DOSSIER */}
-                  <div className="editorial-card" style={{ padding: "18px 20px" }}>
+                  <div
+                    className="editorial-card"
+                    style={{ padding: "18px 20px" }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -1027,7 +1054,10 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                   </div>
 
                   {/* INTERACTIVE EVALUATION TREND GRAPH */}
-                  <div className="editorial-card" style={{ padding: "16px 20px" }}>
+                  <div
+                    className="editorial-card"
+                    style={{ padding: "16px 20px" }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -1110,7 +1140,10 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                             if (gameMoves.length === 0) return "";
                             let d = "M 0 50 ";
                             gameMoves.forEach((m, idx) => {
-                              const clamped = Math.max(-10, Math.min(10, m.eval));
+                              const clamped = Math.max(
+                                -10,
+                                Math.min(10, m.eval),
+                              );
                               const y = 50 - (clamped / 10) * 45;
                               d += `L ${idx} ${y} `;
                             });
@@ -1125,7 +1158,10 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                           d={(() => {
                             if (gameMoves.length === 0) return "";
                             return gameMoves.reduce((acc, m, idx) => {
-                              const clamped = Math.max(-10, Math.min(10, m.eval));
+                              const clamped = Math.max(
+                                -10,
+                                Math.min(10, m.eval),
+                              );
                               const y = 50 - (clamped / 10) * 45;
                               return `${acc} ${idx === 0 ? "M" : "L"} ${idx} ${y}`;
                             }, "");
@@ -1427,10 +1463,10 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
                         {!isAuthenticated
                           ? "Sign In & Upload PGN"
                           : polling.status === POLLING_STATUS.UPLOADING
-                          ? "Uploading PGN..."
-                          : polling.status === POLLING_STATUS.PROCESSING
-                          ? "Analyzing Game..."
-                          : "Start Game Review"}
+                            ? "Uploading PGN..."
+                            : polling.status === POLLING_STATUS.PROCESSING
+                              ? "Analyzing Game..."
+                              : "Start Game Review"}
                       </button>
                     </div>
                   </div>
