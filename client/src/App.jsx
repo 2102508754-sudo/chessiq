@@ -22,6 +22,10 @@ import AuthStatus from "./components/auth/AuthStatus";
 import LoginForm from "./components/auth/LoginForm";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import UserGameHistory from "./components/auth/UserGameHistory";
+import Sidebar from "./components/navigation/Sidebar";
+import Topbar from "./components/navigation/Topbar";
+import SettingsModal from "./components/settings/SettingsModal";
+import OverviewDashboard from "./components/overview/OverviewDashboard";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { useAnalysisPolling, POLLING_STATUS } from "./hooks/useAnalysisPolling";
@@ -94,7 +98,7 @@ function buildReviewedGameModel(g, moves = []) {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("analysis"); // "analysis" | "history" | "insights" | "puzzles" | "auth"
+  const [activeTab, setActiveTab] = useState("overview"); // "overview" | "analysis" | "history" | "insights" | "puzzles" | "auth"
 
   return (
     <AuthProvider onLogoutComplete={() => setActiveTab("analysis")}>
@@ -113,6 +117,9 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
   const [showEngineArrow, setShowEngineArrow] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [customPgnInput, setCustomPgnInput] = useState("");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [boardThemeKey, setBoardThemeKey] = useState("grandmaster");
 
   // Day 12: Real-Time Analysis Polling Lifecycle Hook
   const polling = useAnalysisPolling({
@@ -380,1479 +387,1232 @@ function ChessIQDashboard({ activeTab, setActiveTab }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [stepBack, stepForward, goToStart, goToEnd]);
 
-  // Move Classification Badge Renderer (Chess.com Style)
+  // Move Classification Badge Renderer (Grandmaster Editorial)
   const renderClassificationBadge = (classification) => {
-    switch (classification) {
-      case "BRILLIANT":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "700",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background:
-                "linear-gradient(135deg, rgba(6, 182, 212, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%)",
-              color: "#38bdf8",
-              border: "1px solid rgba(56, 189, 248, 0.5)",
-              boxShadow: "0 0 10px rgba(56, 189, 248, 0.25)",
-            }}
-          >
-            ‼️ Brilliant
-          </span>
-        );
-      case "GREAT":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "700",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(59, 130, 246, 0.2)",
-              color: "#60a5fa",
-              border: "1px solid rgba(59, 130, 246, 0.4)",
-            }}
-          >
-            ! Great
-          </span>
-        );
-      case "BEST":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "700",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(16, 185, 129, 0.2)",
-              color: "#10b981",
-              border: "1px solid rgba(16, 185, 129, 0.4)",
-            }}
-          >
-            ⭐️ Best
-          </span>
-        );
-      case "EXCELLENT":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "600",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(34, 197, 94, 0.15)",
-              color: "#4ade80",
-              border: "1px solid rgba(34, 197, 94, 0.3)",
-            }}
-          >
-            ✓ Excellent
-          </span>
-        );
-      case "GOOD":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "500",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(45, 212, 191, 0.15)",
-              color: "#2dd4bf",
-              border: "1px solid rgba(45, 212, 191, 0.3)",
-            }}
-          >
-            Good
-          </span>
-        );
-      case "BOOK":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "600",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(56, 189, 248, 0.15)",
-              color: "#38bdf8",
-              border: "1px solid rgba(56, 189, 248, 0.3)",
-            }}
-          >
-            📖 Book
-          </span>
-        );
-      case "INACCURACY":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "700",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(245, 158, 11, 0.2)",
-              color: "#fbbf24",
-              border: "1px solid rgba(245, 158, 11, 0.4)",
-            }}
-          >
-            ?! Inaccuracy
-          </span>
-        );
-      case "MISTAKE":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "700",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(249, 115, 22, 0.2)",
-              color: "#fb923c",
-              border: "1px solid rgba(249, 115, 22, 0.4)",
-            }}
-          >
-            ? Mistake
-          </span>
-        );
-      case "BLUNDER":
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              fontSize: "11px",
-              fontWeight: "800",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              background: "rgba(244, 63, 94, 0.25)",
-              color: "#f43f5e",
-              border: "1px solid rgba(244, 63, 94, 0.5)",
-              boxShadow: "0 0 10px rgba(244, 63, 94, 0.3)",
-            }}
-          >
-            ?? Blunder
-          </span>
-        );
-      default:
-        return null;
-    }
+    if (!classification) return null;
+    const c = classification.toLowerCase();
+    const labelMap = {
+      brilliant: "‼️ Brilliant",
+      great: "! Great",
+      best: "⭐️ Best",
+      excellent: "✓ Excellent",
+      good: "Good",
+      book: "📖 Book",
+      inaccuracy: "?! Inaccuracy",
+      mistake: "? Mistake",
+      blunder: "?? Blunder",
+    };
+    return (
+      <span className={`badge-classification badge-${c}`}>
+        {labelMap[c] || classification}
+      </span>
+    );
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "1400px",
-        margin: "0 auto",
-        padding: "20px 24px 60px",
-        minHeight: "100vh",
-      }}
-    >
-      {/* ==================================================================== */}
-      {/* 1. MAIN NAVIGATION HEADER                                            */}
-      {/* ==================================================================== */}
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-          paddingBottom: "16px",
-          borderBottom: "1px solid var(--border-color)",
-          flexWrap: "wrap",
-          gap: "16px",
+    <div className="app-shell">
+      {/* Desktop Persistent Sidebar & Mobile Drawer */}
+      <Sidebar
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          setIsMobileSidebarOpen(false);
         }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #38bdf8 0%, #6366f1 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 0 20px rgba(99, 102, 241, 0.4)",
-            }}
-          >
-            <Crown size={24} color="#0a0c10" />
-          </div>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1
-                style={{
-                  fontSize: "22px",
-                  fontWeight: "800",
-                  letterSpacing: "-0.03em",
-                }}
-              >
-                ChessIQ
-              </h1>
-              <span
-                style={{
-                  fontSize: "11px",
-                  padding: "2px 8px",
-                  borderRadius: "12px",
-                  background: "rgba(56, 189, 248, 0.12)",
-                  color: "var(--accent-cyan)",
-                  fontWeight: "600",
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
-                Game Review
-              </span>
-            </div>
-            <p
-              style={{
-                fontSize: "12px",
-                color: "var(--text-secondary)",
-                marginTop: "2px",
-              }}
-            >
-              Master Game Review, Real-Time Advantage Telemetry &amp;
-              Longitudinal Insights
-            </p>
-          </div>
-        </div>
+        isOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
 
-        {/* User-Centric Tab Switcher + Single-Domain Session Status */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            flexWrap: "wrap",
+      {/* Main Content Pane */}
+      <div className="main-content">
+        {/* Editorial Topbar */}
+        <Topbar
+          activeTab={activeTab}
+          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          onOpenUpload={() => {
+            setActiveTab("analysis");
+            setTimeout(() => {
+              const el = document.getElementById("pgn-upload-section");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }, 50);
           }}
-        >
-          <div
-            style={{
-              display: "flex",
-              background: "rgba(255, 255, 255, 0.04)",
-              padding: "4px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color)",
-              gap: "4px",
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              onClick={() => setActiveTab("analysis")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 14px",
-                borderRadius: "6px",
-                background:
-                  activeTab === "analysis"
-                    ? "rgba(99, 102, 241, 0.25)"
-                    : "transparent",
-                color:
-                  activeTab === "analysis"
-                    ? "var(--text-primary)"
-                    : "var(--text-secondary)",
-                border:
-                  activeTab === "analysis"
-                    ? "1px solid rgba(99, 102, 241, 0.4)"
-                    : "none",
-                fontSize: "13px",
-                fontWeight: "600",
-                cursor: "pointer",
+          boardOrientation={boardOrientation}
+          onFlipBoard={() =>
+            setBoardOrientation((o) => (o === "white" ? "black" : "white"))
+          }
+          isSoundEnabled={isSoundEnabled}
+          onToggleSound={() => setIsSoundEnabled((s) => !s)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          telemetry={telemetry}
+        />
+
+        {/* Viewport Content */}
+        <main className="content-body">
+          {/* TAB 0: GRANDMASTER EDITORIAL OVERVIEW DOSSIER */}
+          {activeTab === "overview" && (
+            <OverviewDashboard
+              games={MASTER_GAMES}
+              selectedGame={selectedGame}
+              onSelectGame={(game) => {
+                setSelectedGame(game);
+                setCurrentPlyIndex(0);
+                setActiveTab("analysis");
               }}
-            >
-              <Swords size={16} /> Game Review &amp; Board
-            </button>
+              onNavigateToTab={setActiveTab}
+            />
+          )}
 
-            <button
-              onClick={() => setActiveTab("history")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 14px",
-                borderRadius: "6px",
-                background:
-                  activeTab === "history"
-                    ? "rgba(99, 102, 241, 0.25)"
-                    : "transparent",
-                color:
-                  activeTab === "history"
-                    ? "var(--text-primary)"
-                    : "var(--text-secondary)",
-                border:
-                  activeTab === "history"
-                    ? "1px solid rgba(99, 102, 241, 0.4)"
-                    : "none",
-                fontSize: "13px",
-                fontWeight: "600",
-                cursor: "pointer",
-              }}
-            >
-              <History size={16} /> My Games
-              {!isAuthenticated && <Lock size={12} color="var(--text-muted)" />}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("insights")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 14px",
-                borderRadius: "6px",
-                background:
-                  activeTab === "insights"
-                    ? "rgba(56, 189, 248, 0.25)"
-                    : "transparent",
-                color:
-                  activeTab === "insights"
-                    ? "var(--text-primary)"
-                    : "var(--text-secondary)",
-                border:
-                  activeTab === "insights"
-                    ? "1px solid rgba(56, 189, 248, 0.4)"
-                    : "none",
-                fontSize: "13px",
-                fontWeight: "600",
-                cursor: "pointer",
-              }}
-            >
-              <BarChart3 size={16} /> Player Insights
-              {!isAuthenticated && <Lock size={12} color="var(--text-muted)" />}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("puzzles")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 14px",
-                borderRadius: "6px",
-                background:
-                  activeTab === "puzzles"
-                    ? "rgba(16, 185, 129, 0.2)"
-                    : "transparent",
-                color:
-                  activeTab === "puzzles"
-                    ? "var(--accent-emerald)"
-                    : "var(--text-secondary)",
-                border:
-                  activeTab === "puzzles"
-                    ? "1px solid rgba(16, 185, 129, 0.4)"
-                    : "none",
-                fontSize: "13px",
-                fontWeight: "600",
-                cursor: "pointer",
-              }}
-            >
-              <Target size={16} /> Practice Puzzles
-              {!isAuthenticated && <Lock size={12} color="var(--text-muted)" />}
-            </button>
-          </div>
-
-          <AuthStatus
-            onOpenLogin={() => {
-              setIntendedDestination(
-                activeTab === "auth" ? "analysis" : activeTab,
-              );
-              setActiveTab("auth");
-            }}
-          />
-        </div>
-      </header>
-
-      {/* ==================================================================== */}
-      {/* TAB 1: GAME REVIEW & INTERACTIVE ADVANTAGE DASHBOARD                 */}
-      {/* ==================================================================== */}
-      {activeTab === "analysis" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-          {/* Day 12: Real-Time Analysis Progress HUD */}
-          <AnalysisProgressBar
-            status={polling.status}
-            currentPly={polling.currentPly}
-            totalPlies={polling.totalPlies}
-            progressPercent={polling.progressPercent}
-            attemptCount={polling.attemptCount}
-            error={polling.error}
-            onRetry={polling.retry}
-            onDismiss={polling.stopPolling}
-          />
-
-          {/* Game Selector Chips */}
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              overflowX: "auto",
-              paddingBottom: "4px",
-            }}
-          >
-            {MASTER_GAMES.map((game) => (
-              <button
-                key={game.id}
-                onClick={() => {
-                  setSelectedGame(game);
-                  setCurrentPlyIndex(0);
-                  setIsPlaying(false);
-                }}
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: "8px",
-                  background:
-                    selectedGame.id === game.id
-                      ? "rgba(99, 102, 241, 0.25)"
-                      : "rgba(255, 255, 255, 0.03)",
-                  border:
-                    selectedGame.id === game.id
-                      ? "1px solid var(--accent-indigo)"
-                      : "1px solid var(--border-color)",
-                  color:
-                    selectedGame.id === game.id
-                      ? "var(--text-primary)"
-                      : "var(--text-secondary)",
-                  fontSize: "13px",
-                  fontWeight: selectedGame.id === game.id ? "700" : "500",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
-              >
-                <Trophy
-                  size={14}
-                  color={
-                    selectedGame.id === game.id
-                      ? "var(--accent-cyan)"
-                      : "var(--text-muted)"
-                  }
-                />
-                {game.title}
-              </button>
-            ))}
-          </div>
-
-          {/* MAIN TWO-COLUMN WORKSPACE */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(360px, 560px) 1fr",
-              gap: "24px",
-              alignItems: "start",
-            }}
-          >
-            {/* LEFT COLUMN: BOARD, EVAL BAR & CONTROLS */}
+          {/* TAB 1: GAME REVIEW & INTERACTIVE ADVANTAGE DASHBOARD */}
+          {activeTab === "analysis" && (
             <div
-              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
             >
-              {/* ADVANTAGE BANNER (CHESS.COM STYLE) */}
-              <div
-                className="glass-panel"
-                style={{
-                  padding: "14px 18px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderLeft: `5px solid ${advantage.badgeColor}`,
-                  boxShadow: `0 0 15px ${advantage.badgeColor}22`,
-                }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
-                >
-                  <div
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "6px",
-                      background:
-                        advantage.side === "white"
-                          ? "#f8fafc"
-                          : advantage.side === "black"
-                            ? "#1e293b"
-                            : "rgba(255, 255, 255, 0.08)",
-                      color:
-                        advantage.side === "white"
-                          ? "#0f172a"
-                          : advantage.side === "black"
-                            ? "#f8fafc"
-                            : "#94a3b8",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "16px",
-                      fontWeight: "800",
-                      border: "1px solid var(--border-color)",
-                    }}
-                  >
-                    {advantage.side === "white"
-                      ? "♔"
-                      : advantage.side === "black"
-                        ? "♚"
-                        : "⚖️"}
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: "600",
-                        color: "var(--text-muted)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      Evaluation Advantage
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: "700",
-                        color: advantage.badgeColor,
-                        marginTop: "2px",
-                      }}
-                    >
-                      {advantage.status}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Score Pill */}
-                <div
-                  style={{
-                    padding: "4px 12px",
-                    borderRadius: "6px",
-                    background: "rgba(0, 0, 0, 0.3)",
-                    border: "1px solid var(--border-color)",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "16px",
-                    fontWeight: "800",
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  {advantage.scoreStr}
-                </div>
-              </div>
-
-              {/* DUAL WIN PROBABILITY GAUGE */}
-              <div
-                className="glass-panel"
-                style={{
-                  padding: "10px 14px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "6px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                  }}
-                >
-                  <span style={{ color: "#f8fafc" }}>
-                    White: {advantage.whiteWinProb}%
-                  </span>
-                  <span style={{ color: "var(--text-secondary)" }}>
-                    Win Probability
-                  </span>
-                  <span style={{ color: "#94a3b8" }}>
-                    Black: {advantage.blackWinProb}%
-                  </span>
-                </div>
-                {/* Visual Bar */}
-                <div
-                  style={{
-                    width: "100%",
-                    height: "8px",
-                    borderRadius: "4px",
-                    overflow: "hidden",
-                    display: "flex",
-                    background: "#1e293b",
-                    border: "1px solid var(--border-color)",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${advantage.whiteWinProb}%`,
-                      background:
-                        "linear-gradient(90deg, #38bdf8 0%, #f8fafc 100%)",
-                      transition: "width 0.3s ease",
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: `${advantage.blackWinProb}%`,
-                      background: "#0f172a",
-                      transition: "width 0.3s ease",
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* DAY 11: INTERACTIVE CHESSBOARD & DYNAMIC BOARD FLIPPING */}
-              <InteractiveChessboard
-                position={currentFen}
-                currentMove={currentMove}
-                boardOrientation={boardOrientation}
-                onOrientationChange={setBoardOrientation}
-                evalBarPercent={evalBarPercent}
-                advantage={advantage}
-                onMovePlayed={handleMovePlayed}
-                showEngineArrow={showEngineArrow}
-                onToggleEngineArrow={() => setShowEngineArrow((prev) => !prev)}
-                isSoundEnabled={isSoundEnabled}
-                onToggleSound={() => setIsSoundEnabled((prev) => !prev)}
+              {/* Day 12: Real-Time Analysis Progress HUD */}
+              <AnalysisProgressBar
+                status={polling.status}
+                currentPly={polling.currentPly}
+                totalPlies={polling.totalPlies}
+                progressPercent={polling.progressPercent}
+                attemptCount={polling.attemptCount}
+                error={polling.error}
+                onRetry={polling.retry}
+                onDismiss={polling.stopPolling}
               />
 
-              {/* BOARD PLAYBACK CONTROLS */}
+              {/* Editorial Match Selector Chips */}
               <div
-                className="glass-panel"
                 style={{
-                  padding: "12px 18px",
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  gap: "10px",
+                  overflowX: "auto",
+                  paddingBottom: "6px",
+                  borderBottom: "1px solid var(--border-subtle)",
                 }}
               >
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <button
-                    onClick={goToStart}
-                    style={{
-                      padding: "8px 12px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "6px",
-                      color: "var(--text-primary)",
-                      cursor: "pointer",
-                    }}
-                    title="Start of Game"
-                  >
-                    <ChevronsLeft size={16} />
-                  </button>
-                  <button
-                    onClick={stepBack}
-                    style={{
-                      padding: "8px 12px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "6px",
-                      color: "var(--text-primary)",
-                      cursor: "pointer",
-                    }}
-                    title="Previous Move (←)"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    style={{
-                      padding: "8px 16px",
-                      background: isPlaying
-                        ? "rgba(244, 63, 94, 0.25)"
-                        : "rgba(56, 189, 248, 0.25)",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "6px",
-                      color: "var(--text-primary)",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      fontWeight: "600",
-                    }}
-                    title={isPlaying ? "Pause" : "Auto Play"}
-                  >
-                    {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-                    <span style={{ fontSize: "12px" }}>
-                      {isPlaying ? "Pause" : "Play"}
-                    </span>
-                  </button>
-                  <button
-                    onClick={stepForward}
-                    style={{
-                      padding: "8px 12px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "6px",
-                      color: "var(--text-primary)",
-                      cursor: "pointer",
-                    }}
-                    title="Next Move (→)"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                  <button
-                    onClick={goToEnd}
-                    style={{
-                      padding: "8px 12px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "6px",
-                      color: "var(--text-primary)",
-                      cursor: "pointer",
-                    }}
-                    title="Current Position"
-                  >
-                    <ChevronsRight size={16} />
-                  </button>
-                </div>
-
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontFamily: "var(--font-mono)",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    Move:{" "}
-                    <strong style={{ color: "var(--accent-cyan)" }}>
-                      {currentMove
-                        ? `${currentMove.moveNumber}${currentMove.color === "WHITE" ? "." : "..."}`
-                        : "Start"}
-                    </strong>{" "}
-                    ({currentPlyIndex}/{gameMoves.length})
-                  </span>
-
-                  <button
-                    onClick={() =>
-                      setBoardOrientation((o) =>
-                        o === "white" ? "black" : "white",
-                      )
-                    }
-                    style={{
-                      padding: "6px 12px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "6px",
-                      color: "var(--text-secondary)",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                    title="Flip Board Orientation"
-                  >
-                    <RotateCcw size={14} /> Flip (
-                    {boardOrientation.toUpperCase()})
-                  </button>
-                </div>
+                {MASTER_GAMES.map((game) => {
+                  const isSelected = selectedGame.id === game.id;
+                  return (
+                    <button
+                      key={game.id}
+                      onClick={() => {
+                        setSelectedGame(game);
+                        setCurrentPlyIndex(0);
+                        setIsPlaying(false);
+                      }}
+                      style={{
+                        padding: "8px 14px",
+                        borderRadius: "6px",
+                        background: isSelected
+                          ? "var(--surface-primary)"
+                          : "transparent",
+                        border: isSelected
+                          ? "1px solid var(--accent-gold)"
+                          : "1px solid var(--border-subtle)",
+                        color: isSelected
+                          ? "var(--text-primary)"
+                          : "var(--text-secondary)",
+                        fontSize: "13px",
+                        fontWeight: isSelected ? "600" : "400",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        boxShadow: isSelected ? "var(--shadow-sm)" : "none",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <Trophy
+                        size={14}
+                        color={
+                          isSelected
+                            ? "var(--accent-gold)"
+                            : "var(--text-muted)"
+                        }
+                      />
+                      <span>{game.title}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Day 13: Tactical Blunder Classification Tiers & Move Navigation */}
-              <TacticalBlunderTiers
-                moves={gameMoves}
-                currentPlyIndex={currentPlyIndex}
-                onSelectPly={setCurrentPlyIndex}
-              />
-            </div>
-
-            {/* RIGHT COLUMN: ACCURACY CARD, EVALUATION GRAPH & MOVE LIST */}
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-            >
-              {/* CHESS.COM GAME ACCURACY SHOWCASE */}
-              <div className="glass-panel" style={{ padding: "18px 20px" }}>
+              {/* MAIN TWO-COLUMN WORKSPACE */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(380px, 580px) 1fr",
+                  gap: "24px",
+                  alignItems: "start",
+                }}
+              >
+                {/* LEFT COLUMN: BOARD, EVAL BAR & CONTROLS */}
                 <div
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "14px",
-                    paddingBottom: "10px",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
-                >
-                  <div>
-                    <h3
-                      style={{
-                        fontSize: "16px",
-                        fontWeight: "700",
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      {selectedGame.title}
-                    </h3>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "var(--text-secondary)",
-                        marginTop: "2px",
-                      }}
-                    >
-                      {selectedGame.event} • ECO:{" "}
-                      <span
-                        style={{
-                          color: "var(--accent-cyan)",
-                          fontFamily: "var(--font-mono)",
-                        }}
-                      >
-                        {selectedGame.eco}
-                      </span>{" "}
-                      ({selectedGame.opening})
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "800",
-                      padding: "4px 10px",
-                      borderRadius: "6px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                      fontFamily: "var(--font-mono)",
-                    }}
-                  >
-                    {selectedGame.result}
-                  </div>
-                </div>
-
-                {/* Player Accuracy Meters */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    flexDirection: "column",
                     gap: "16px",
                   }}
                 >
-                  {/* White Player */}
+                  {/* ADVANTAGE BANNER (EDITORIAL GRANDMASTER) */}
                   <div
+                    className="editorial-card"
                     style={{
-                      background: "rgba(255, 255, 255, 0.02)",
-                      padding: "14px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--border-color)",
+                      padding: "14px 18px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderLeft: `4px solid ${advantage.badgeColor}`,
                     }}
                   >
                     <div
                       style={{
                         display: "flex",
-                        justifyContent: "space-between",
                         alignItems: "center",
+                        gap: "12px",
                       }}
                     >
-                      <div>
-                        <div style={{ fontSize: "13px", fontWeight: "700" }}>
-                          {selectedGame.white.name}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            color: "var(--text-muted)",
-                          }}
-                        >
-                          Rating {selectedGame.white.rating} (White)
-                        </div>
-                      </div>
                       <div
                         style={{
-                          fontSize: "22px",
-                          fontWeight: "800",
-                          color: "var(--accent-emerald)",
-                        }}
-                      >
-                        {selectedGame.white.accuracy}%
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        color: "var(--text-secondary)",
-                        marginTop: "6px",
-                      }}
-                    >
-                      Accuracy Score
-                    </div>
-                  </div>
-
-                  {/* Black Player */}
-                  <div
-                    style={{
-                      background: "rgba(255, 255, 255, 0.02)",
-                      padding: "14px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontSize: "13px", fontWeight: "700" }}>
-                          {selectedGame.black.name}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            color: "var(--text-muted)",
-                          }}
-                        >
-                          Rating {selectedGame.black.rating} (Black)
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "22px",
-                          fontWeight: "800",
+                          width: "34px",
+                          height: "34px",
+                          borderRadius: "6px",
+                          background:
+                            advantage.side === "white"
+                              ? "var(--board-light)"
+                              : advantage.side === "black"
+                                ? "var(--surface-tertiary)"
+                                : "var(--surface-secondary)",
                           color:
-                            selectedGame.black.accuracy > 80
-                              ? "var(--accent-cyan)"
-                              : "var(--accent-amber)",
+                            advantage.side === "white"
+                              ? "#292923"
+                              : advantage.side === "black"
+                                ? "#F5F1E8"
+                                : "var(--text-secondary)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "18px",
+                          fontWeight: "800",
+                          border: "1px solid var(--border)",
                         }}
                       >
-                        {selectedGame.black.accuracy}%
+                        {advantage.side === "white"
+                          ? "♔"
+                          : advantage.side === "black"
+                            ? "♚"
+                            : "⚖️"}
+                      </div>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            color: "var(--text-muted)",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          Evaluation Advantage
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "var(--font-serif)",
+                            fontSize: "16px",
+                            fontWeight: "600",
+                            color: advantage.badgeColor,
+                            marginTop: "2px",
+                          }}
+                        >
+                          {advantage.status}
+                        </div>
                       </div>
                     </div>
+
+                    {/* Score Pill */}
                     <div
                       style={{
-                        fontSize: "11px",
-                        color: "var(--text-secondary)",
-                        marginTop: "6px",
+                        padding: "5px 12px",
+                        borderRadius: "6px",
+                        background: "var(--surface-secondary)",
+                        border: "1px solid var(--border)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        color: "var(--text-primary)",
                       }}
                     >
-                      Accuracy Score
+                      {advantage.scoreStr}
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* INTERACTIVE EVALUATION TREND GRAPH (CHESS.COM STYLE) */}
-              <div className="glass-panel" style={{ padding: "16px 20px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      textTransform: "uppercase",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    Game Advantage Momentum
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      color: "var(--text-muted)",
-                      fontFamily: "var(--font-mono)",
-                    }}
-                  >
-                    Click graph to jump to move
-                  </span>
-                </div>
-
-                {/* SVG Graph Canvas */}
-                <div
-                  style={{
-                    position: "relative",
-                    height: "90px",
-                    background: "rgba(0, 0, 0, 0.3)",
-                    borderRadius: "6px",
-                    border: "1px solid var(--border-color)",
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* Center Line (0.00 Equal) */}
+                  {/* DUAL WIN PROBABILITY GAUGE */}
                   <div
+                    className="editorial-card"
                     style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: 0,
-                      right: 0,
-                      height: "1px",
-                      background: "rgba(255, 255, 255, 0.2)",
-                      borderTop: "1px dashed rgba(255, 255, 255, 0.2)",
+                      padding: "10px 16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
                     }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      <span style={{ color: "var(--text-primary)" }}>
+                        White: {advantage.whiteWinProb}%
+                      </span>
+                      <span
+                        style={{
+                          color: "var(--text-muted)",
+                          fontFamily: "var(--font-serif)",
+                          fontSize: "13px",
+                        }}
+                      >
+                        Win Probability
+                      </span>
+                      <span style={{ color: "var(--text-secondary)" }}>
+                        Black: {advantage.blackWinProb}%
+                      </span>
+                    </div>
+                    {/* Visual Bar */}
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "7px",
+                        borderRadius: "4px",
+                        overflow: "hidden",
+                        display: "flex",
+                        background: "var(--border)",
+                        border: "1px solid var(--border-subtle)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${advantage.whiteWinProb}%`,
+                          background: "var(--accent-gold)",
+                          transition: "width 0.3s ease",
+                        }}
+                      />
+                      <div
+                        style={{
+                          width: `${advantage.blackWinProb}%`,
+                          background: "var(--surface-tertiary)",
+                          transition: "width 0.3s ease",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* INTERACTIVE CHESSBOARD */}
+                  <InteractiveChessboard
+                    position={currentFen}
+                    currentMove={currentMove}
+                    boardOrientation={boardOrientation}
+                    onOrientationChange={setBoardOrientation}
+                    evalBarPercent={evalBarPercent}
+                    advantage={advantage}
+                    onMovePlayed={handleMovePlayed}
+                    showEngineArrow={showEngineArrow}
+                    onToggleEngineArrow={() =>
+                      setShowEngineArrow((prev) => !prev)
+                    }
+                    isSoundEnabled={isSoundEnabled}
+                    onToggleSound={() => setIsSoundEnabled((prev) => !prev)}
+                    boardTheme={boardThemeKey}
                   />
 
-                  {/* SVG Line & Area */}
-                  <svg
+                  {/* BOARD PLAYBACK CONTROLS */}
+                  <div
+                    className="editorial-card"
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      cursor: "pointer",
-                      display: "block",
-                    }}
-                    viewBox={`0 0 ${Math.max(1, gameMoves.length)} 100`}
-                    preserveAspectRatio="none"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const clickX = e.clientX - rect.left;
-                      const ratio = clickX / rect.width;
-                      const targetPly = Math.round(ratio * gameMoves.length);
-                      setCurrentPlyIndex(
-                        Math.max(0, Math.min(gameMoves.length, targetPly)),
-                      );
+                      padding: "12px 18px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "10px",
+                      flexWrap: "wrap",
                     }}
                   >
-                    {/* Area Polygon */}
-                    <path
-                      d={(() => {
-                        if (gameMoves.length === 0) return "";
-                        let d = "M 0 50 ";
-                        gameMoves.forEach((m, idx) => {
-                          const clamped = Math.max(-10, Math.min(10, m.eval));
-                          const y = 50 - (clamped / 10) * 45; // 0 to 100
-                          d += `L ${idx} ${y} `;
-                        });
-                        d += `L ${gameMoves.length - 1} 50 Z`;
-                        return d;
-                      })()}
-                      fill="rgba(56, 189, 248, 0.2)"
-                    />
-
-                    {/* Polyline */}
-                    <path
-                      d={(() => {
-                        if (gameMoves.length === 0) return "";
-                        return gameMoves.reduce((acc, m, idx) => {
-                          const clamped = Math.max(-10, Math.min(10, m.eval));
-                          const y = 50 - (clamped / 10) * 45;
-                          return `${acc} ${idx === 0 ? "M" : "L"} ${idx} ${y}`;
-                        }, "");
-                      })()}
-                      fill="none"
-                      stroke="#38bdf8"
-                      strokeWidth="2"
-                    />
-
-                    {/* Active Ply Marker */}
-                    {currentPlyIndex > 0 &&
-                      currentPlyIndex <= gameMoves.length && (
-                        <line
-                          x1={currentPlyIndex - 1}
-                          y1="0"
-                          x2={currentPlyIndex - 1}
-                          y2="100"
-                          stroke="#f43f5e"
-                          strokeWidth="2"
-                        />
-                      )}
-                  </svg>
-                </div>
-              </div>
-
-              {/* MOVE LIST WITH CLASSIFICATION BADGES */}
-              <div
-                className="glass-panel"
-                style={{
-                  padding: "16px",
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "10px",
-                    paddingBottom: "8px",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      textTransform: "uppercase",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    Moves &amp; Quality Classifications
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      color: "var(--text-muted)",
-                      fontFamily: "var(--font-mono)",
-                    }}
-                  >
-                    Click move to inspect
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    maxHeight: "340px",
-                    overflowY: "auto",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "2px",
-                    paddingRight: "4px",
-                  }}
-                >
-                  {Array.from({
-                    length: Math.ceil(gameMoves.length / 2),
-                  }).map((_, moveIdx) => {
-                    const whitePly = gameMoves[moveIdx * 2];
-                    const blackPly = gameMoves[moveIdx * 2 + 1];
-                    const isWhiteActive = currentPlyIndex === moveIdx * 2 + 1;
-                    const isBlackActive = currentPlyIndex === moveIdx * 2 + 2;
-
-                    return (
-                      <div
-                        key={moveIdx}
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <button
+                        onClick={goToStart}
+                        className="btn-ghost"
+                        style={{ padding: "8px 12px" }}
+                        title="Start of Game (↑)"
+                        aria-label="Start of Game"
+                      >
+                        <ChevronsLeft size={16} />
+                      </button>
+                      <button
+                        onClick={stepBack}
+                        className="btn-ghost"
+                        style={{ padding: "8px 12px" }}
+                        title="Previous Move (←)"
+                        aria-label="Previous Move"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <button
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        className="btn-primary"
                         style={{
-                          display: "grid",
-                          gridTemplateColumns: "36px 1fr 1fr",
-                          gap: "8px",
-                          padding: "5px 8px",
-                          borderRadius: "6px",
-                          fontSize: "13px",
-                          background:
-                            moveIdx % 2 === 0
-                              ? "rgba(255, 255, 255, 0.015)"
-                              : "transparent",
+                          padding: "8px 16px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                        title={
+                          isPlaying ? "Pause (Space)" : "Auto Play (Space)"
+                        }
+                        aria-label={
+                          isPlaying ? "Pause playback" : "Auto play moves"
+                        }
+                      >
+                        {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                        <span style={{ fontSize: "12px" }}>
+                          {isPlaying ? "Pause" : "Play"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={stepForward}
+                        className="btn-ghost"
+                        style={{ padding: "8px 12px" }}
+                        title="Next Move (→)"
+                        aria-label="Next Move"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                      <button
+                        onClick={goToEnd}
+                        className="btn-ghost"
+                        style={{ padding: "8px 12px" }}
+                        title="Current Position (↓)"
+                        aria-label="End of Game"
+                      >
+                        <ChevronsRight size={16} />
+                      </button>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontFamily: "var(--font-mono)",
+                          color: "var(--text-secondary)",
                         }}
                       >
-                        <span
+                        Move:{" "}
+                        <strong style={{ color: "var(--accent-gold)" }}>
+                          {currentMove
+                            ? `${currentMove.moveNumber}${
+                                currentMove.color === "WHITE" ? "." : "..."
+                              }`
+                            : "Start"}
+                        </strong>{" "}
+                        ({currentPlyIndex}/{gameMoves.length})
+                      </span>
+
+                      <button
+                        onClick={() =>
+                          setBoardOrientation((o) =>
+                            o === "white" ? "black" : "white",
+                          )
+                        }
+                        className="btn-ghost"
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                        title="Flip Board Orientation (F)"
+                      >
+                        <RotateCcw size={14} /> Flip (
+                        {boardOrientation.toUpperCase()})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tactical Blunder Classification Tiers & Move Navigation */}
+                  <TacticalBlunderTiers
+                    moves={gameMoves}
+                    currentPlyIndex={currentPlyIndex}
+                    onSelectPly={setCurrentPlyIndex}
+                  />
+                </div>
+
+                {/* RIGHT COLUMN: ACCURACY CARD, EVALUATION GRAPH & MOVE LIST */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                  }}
+                >
+                  {/* EDITORIAL MATCH & ACCURACY DOSSIER */}
+                  <div
+                    className="editorial-card"
+                    style={{ padding: "18px 20px" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "14px",
+                        paddingBottom: "10px",
+                        borderBottom: "1px solid var(--border-subtle)",
+                      }}
+                    >
+                      <div>
+                        <h3
                           style={{
-                            color: "var(--text-muted)",
-                            fontFamily: "var(--font-mono)",
-                            paddingTop: "4px",
+                            fontFamily: "var(--font-serif)",
+                            fontSize: "18px",
+                            fontWeight: "600",
+                            letterSpacing: "-0.01em",
+                            color: "var(--text-primary)",
                           }}
                         >
-                          {moveIdx + 1}.
-                        </span>
-
-                        {/* White Move */}
-                        {whitePly ? (
-                          <div
-                            onClick={() => {
-                              setIsPlaying(false);
-                              setCurrentPlyIndex(whitePly.ply);
-                            }}
+                          {selectedGame.title}
+                        </h3>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {selectedGame.event} • ECO:{" "}
+                          <span
                             style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              padding: "4px 8px",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              background: isWhiteActive
-                                ? "rgba(99, 102, 241, 0.3)"
-                                : "transparent",
-                              border: isWhiteActive
-                                ? "1px solid var(--accent-indigo)"
-                                : "1px solid transparent",
+                              color: "var(--accent-gold)",
+                              fontFamily: "var(--font-mono)",
                             }}
                           >
-                            <span
-                              style={{
-                                fontWeight: isWhiteActive ? "700" : "500",
-                              }}
-                            >
-                              {whitePly.san}
-                            </span>
-                            {renderClassificationBadge(whitePly.classification)}
-                          </div>
-                        ) : (
-                          <div />
-                        )}
-
-                        {/* Black Move */}
-                        {blackPly ? (
-                          <div
-                            onClick={() => {
-                              setIsPlaying(false);
-                              setCurrentPlyIndex(blackPly.ply);
-                            }}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              padding: "4px 8px",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              background: isBlackActive
-                                ? "rgba(99, 102, 241, 0.3)"
-                                : "transparent",
-                              border: isBlackActive
-                                ? "1px solid var(--accent-indigo)"
-                                : "1px solid transparent",
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontWeight: isBlackActive ? "700" : "500",
-                              }}
-                            >
-                              {blackPly.san}
-                            </span>
-                            {renderClassificationBadge(blackPly.classification)}
-                          </div>
-                        ) : (
-                          <div />
-                        )}
+                            {selectedGame.eco}
+                          </span>{" "}
+                          ({selectedGame.opening})
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: "700",
+                          padding: "4px 10px",
+                          borderRadius: "4px",
+                          background: "var(--surface-secondary)",
+                          border: "1px solid var(--border)",
+                          fontFamily: "var(--font-mono)",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {selectedGame.result}
+                      </div>
+                    </div>
 
-              {/* UPLOAD CUSTOM PGN SECTION */}
-              <div className="glass-panel" style={{ padding: "14px 18px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <Upload size={16} color="var(--accent-cyan)" />
-                  <span style={{ fontSize: "13px", fontWeight: "700" }}>
-                    Analyze Your Own Game (PGN Upload)
-                  </span>
-                </div>
-                <textarea
-                  value={customPgnInput}
-                  onChange={(e) => setCustomPgnInput(e.target.value)}
-                  placeholder="Paste PGN here: 1. e4 c5 2. Nf3 d6 3. d4..."
-                  rows={2}
-                  style={{
-                    width: "100%",
-                    background: "rgba(0, 0, 0, 0.25)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: "6px",
-                    color: "var(--text-primary)",
-                    padding: "8px 10px",
-                    fontSize: "12px",
-                    fontFamily: "var(--font-mono)",
-                    resize: "vertical",
-                  }}
-                />
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginTop: "8px",
-                    gap: "8px",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {!isAuthenticated ? (
-                    <span
+                    {/* Player Accuracy Meters */}
+                    <div
                       style={{
-                        fontSize: "11px",
-                        color: "var(--accent-amber)",
-                        display: "inline-flex",
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "14px",
+                      }}
+                    >
+                      {/* White Player */}
+                      <div
+                        style={{
+                          background: "var(--surface-secondary)",
+                          padding: "14px",
+                          borderRadius: "6px",
+                          border: "1px solid var(--border-subtle)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "13px",
+                                fontWeight: "600",
+                                color: "var(--text-primary)",
+                              }}
+                            >
+                              {selectedGame.white.name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "var(--text-muted)",
+                                marginTop: "2px",
+                              }}
+                            >
+                              Rating {selectedGame.white.rating} (White)
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "22px",
+                              fontWeight: "700",
+                              fontFamily: "var(--font-mono)",
+                              color: "var(--accent-sage)",
+                            }}
+                          >
+                            {selectedGame.white.accuracy}%
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "var(--text-muted)",
+                            marginTop: "6px",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          Accuracy Rating
+                        </div>
+                      </div>
+
+                      {/* Black Player */}
+                      <div
+                        style={{
+                          background: "var(--surface-secondary)",
+                          padding: "14px",
+                          borderRadius: "6px",
+                          border: "1px solid var(--border-subtle)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "13px",
+                                fontWeight: "600",
+                                color: "var(--text-primary)",
+                              }}
+                            >
+                              {selectedGame.black.name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "var(--text-muted)",
+                                marginTop: "2px",
+                              }}
+                            >
+                              Rating {selectedGame.black.rating} (Black)
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "22px",
+                              fontWeight: "700",
+                              fontFamily: "var(--font-mono)",
+                              color: "var(--accent-gold)",
+                            }}
+                          >
+                            {selectedGame.black.accuracy}%
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "var(--text-muted)",
+                            marginTop: "6px",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          Accuracy Rating
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* INTERACTIVE EVALUATION TREND GRAPH */}
+                  <div
+                    className="editorial-card"
+                    style={{ padding: "16px 20px" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
                         alignItems: "center",
-                        gap: "4px",
+                        marginBottom: "10px",
                       }}
                     >
-                      <Lock size={12} /> Sign in required to persist games
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        color: "var(--accent-emerald)",
-                      }}
-                    >
-                      Uploading as {user?.username}
-                    </span>
-                  )}
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          color: "var(--text-secondary)",
+                        }}
+                      >
+                        Advantage Momentum Curve
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--text-muted)",
+                          fontFamily: "var(--font-mono)",
+                        }}
+                      >
+                        Click curve to jump to ply
+                      </span>
+                    </div>
 
-                  <button
-                    onClick={handlePgnUpload}
-                    disabled={
-                      polling.status === POLLING_STATUS.PROCESSING ||
-                      polling.status === POLLING_STATUS.UPLOADING
-                    }
-                    className="btn-primary"
+                    {/* SVG Graph Canvas */}
+                    <div
+                      style={{
+                        position: "relative",
+                        height: "90px",
+                        background: "var(--surface-secondary)",
+                        borderRadius: "6px",
+                        border: "1px solid var(--border-subtle)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {/* Center Line (0.00 Equal) */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: 0,
+                          right: 0,
+                          height: "1px",
+                          background: "var(--divider)",
+                          borderTop: "1px dashed var(--divider)",
+                        }}
+                      />
+
+                      {/* SVG Line & Area */}
+                      <svg
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          cursor: "pointer",
+                          display: "block",
+                        }}
+                        viewBox={`0 0 ${Math.max(1, gameMoves.length)} 100`}
+                        preserveAspectRatio="none"
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const clickX = e.clientX - rect.left;
+                          const ratio = clickX / rect.width;
+                          const targetPly = Math.round(
+                            ratio * gameMoves.length,
+                          );
+                          setCurrentPlyIndex(
+                            Math.max(0, Math.min(gameMoves.length, targetPly)),
+                          );
+                        }}
+                      >
+                        {/* Area Polygon */}
+                        <path
+                          d={(() => {
+                            if (gameMoves.length === 0) return "";
+                            let d = "M 0 50 ";
+                            gameMoves.forEach((m, idx) => {
+                              const clamped = Math.max(
+                                -10,
+                                Math.min(10, m.eval),
+                              );
+                              const y = 50 - (clamped / 10) * 45;
+                              d += `L ${idx} ${y} `;
+                            });
+                            d += `L ${gameMoves.length - 1} 50 Z`;
+                            return d;
+                          })()}
+                          fill="var(--accent-gold-light)"
+                        />
+
+                        {/* Polyline */}
+                        <path
+                          d={(() => {
+                            if (gameMoves.length === 0) return "";
+                            return gameMoves.reduce((acc, m, idx) => {
+                              const clamped = Math.max(
+                                -10,
+                                Math.min(10, m.eval),
+                              );
+                              const y = 50 - (clamped / 10) * 45;
+                              return `${acc} ${idx === 0 ? "M" : "L"} ${idx} ${y}`;
+                            }, "");
+                          })()}
+                          fill="none"
+                          stroke="var(--accent-gold)"
+                          strokeWidth="2"
+                        />
+
+                        {/* Active Ply Marker */}
+                        {currentPlyIndex > 0 &&
+                          currentPlyIndex <= gameMoves.length && (
+                            <line
+                              x1={currentPlyIndex - 1}
+                              y1="0"
+                              x2={currentPlyIndex - 1}
+                              y2="100"
+                              stroke="var(--accent-clay)"
+                              strokeWidth="2"
+                            />
+                          )}
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* MOVE LIST WITH CLASSIFICATION BADGES */}
+                  <div
+                    className="editorial-card"
                     style={{
-                      padding: "6px 14px",
-                      fontSize: "12px",
-                      opacity:
-                        polling.status === POLLING_STATUS.PROCESSING ||
-                        polling.status === POLLING_STATUS.UPLOADING
-                          ? 0.6
-                          : 1,
-                      cursor:
-                        polling.status === POLLING_STATUS.PROCESSING ||
-                        polling.status === POLLING_STATUS.UPLOADING
-                          ? "not-allowed"
-                          : "pointer",
+                      padding: "16px",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
                   >
-                    {!isAuthenticated
-                      ? "Sign In & Upload PGN"
-                      : polling.status === POLLING_STATUS.UPLOADING
-                        ? "Uploading PGN..."
-                        : polling.status === POLLING_STATUS.PROCESSING
-                          ? "Analyzing Game..."
-                          : "Start Game Review"}
-                  </button>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "10px",
+                        paddingBottom: "8px",
+                        borderBottom: "1px solid var(--border-subtle)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          color: "var(--text-secondary)",
+                        }}
+                      >
+                        Moves &amp; Quality Classifications
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--text-muted)",
+                          fontFamily: "var(--font-mono)",
+                        }}
+                      >
+                        Click move to inspect
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        maxHeight: "340px",
+                        overflowY: "auto",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "2px",
+                        paddingRight: "4px",
+                      }}
+                    >
+                      {Array.from({
+                        length: Math.ceil(gameMoves.length / 2),
+                      }).map((_, moveIdx) => {
+                        const whitePly = gameMoves[moveIdx * 2];
+                        const blackPly = gameMoves[moveIdx * 2 + 1];
+                        const isWhiteActive =
+                          currentPlyIndex === moveIdx * 2 + 1;
+                        const isBlackActive =
+                          currentPlyIndex === moveIdx * 2 + 2;
+
+                        return (
+                          <div
+                            key={moveIdx}
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "36px 1fr 1fr",
+                              gap: "8px",
+                              padding: "5px 8px",
+                              borderRadius: "6px",
+                              fontSize: "13px",
+                              background:
+                                moveIdx % 2 === 0
+                                  ? "var(--surface-secondary)"
+                                  : "transparent",
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: "var(--text-muted)",
+                                fontFamily: "var(--font-mono)",
+                                paddingTop: "4px",
+                                fontSize: "12px",
+                              }}
+                            >
+                              {moveIdx + 1}.
+                            </span>
+
+                            {/* White Move */}
+                            {whitePly ? (
+                              <div
+                                onClick={() => {
+                                  setIsPlaying(false);
+                                  setCurrentPlyIndex(whitePly.ply);
+                                }}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  background: isWhiteActive
+                                    ? "var(--accent-gold-light)"
+                                    : "transparent",
+                                  border: isWhiteActive
+                                    ? "1px solid var(--accent-gold)"
+                                    : "1px solid transparent",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontWeight: isWhiteActive ? "700" : "500",
+                                    fontFamily: "var(--font-mono)",
+                                    color: isWhiteActive
+                                      ? "var(--accent-gold)"
+                                      : "var(--text-primary)",
+                                  }}
+                                >
+                                  {whitePly.san}
+                                </span>
+                                {renderClassificationBadge(
+                                  whitePly.classification,
+                                )}
+                              </div>
+                            ) : (
+                              <div />
+                            )}
+
+                            {/* Black Move */}
+                            {blackPly ? (
+                              <div
+                                onClick={() => {
+                                  setIsPlaying(false);
+                                  setCurrentPlyIndex(blackPly.ply);
+                                }}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  background: isBlackActive
+                                    ? "var(--accent-gold-light)"
+                                    : "transparent",
+                                  border: isBlackActive
+                                    ? "1px solid var(--accent-gold)"
+                                    : "1px solid transparent",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontWeight: isBlackActive ? "700" : "500",
+                                    fontFamily: "var(--font-mono)",
+                                    color: isBlackActive
+                                      ? "var(--accent-gold)"
+                                      : "var(--text-primary)",
+                                  }}
+                                >
+                                  {blackPly.san}
+                                </span>
+                                {renderClassificationBadge(
+                                  blackPly.classification,
+                                )}
+                              </div>
+                            ) : (
+                              <div />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* UPLOAD CUSTOM PGN SECTION */}
+                  <div
+                    id="pgn-upload-section"
+                    className="editorial-card"
+                    style={{ padding: "16px 20px" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <Upload size={16} color="var(--accent-gold)" />
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          fontFamily: "var(--font-serif)",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        Analyze Custom Match (PGN Upload)
+                      </span>
+                    </div>
+                    <textarea
+                      value={customPgnInput}
+                      onChange={(e) => setCustomPgnInput(e.target.value)}
+                      placeholder="Paste PGN here: 1. e4 c5 2. Nf3 d6 3. d4 cxd4..."
+                      rows={2}
+                      style={{
+                        width: "100%",
+                        background: "var(--surface-secondary)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "6px",
+                        color: "var(--text-primary)",
+                        padding: "8px 10px",
+                        fontSize: "12px",
+                        fontFamily: "var(--font-mono)",
+                        resize: "vertical",
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginTop: "8px",
+                        gap: "8px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {!isAuthenticated ? (
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            color: "var(--accent-clay)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <Lock size={12} /> Sign in required to save games
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            color: "var(--accent-sage)",
+                          }}
+                        >
+                          Uploading as {user?.username}
+                        </span>
+                      )}
+
+                      <button
+                        onClick={handlePgnUpload}
+                        disabled={
+                          polling.status === POLLING_STATUS.PROCESSING ||
+                          polling.status === POLLING_STATUS.UPLOADING
+                        }
+                        className="btn-primary"
+                        style={{
+                          padding: "6px 14px",
+                          fontSize: "12px",
+                          opacity:
+                            polling.status === POLLING_STATUS.PROCESSING ||
+                            polling.status === POLLING_STATUS.UPLOADING
+                              ? 0.6
+                              : 1,
+                          cursor:
+                            polling.status === POLLING_STATUS.PROCESSING ||
+                            polling.status === POLLING_STATUS.UPLOADING
+                              ? "not-allowed"
+                              : "pointer",
+                        }}
+                      >
+                        {!isAuthenticated
+                          ? "Sign In & Upload PGN"
+                          : polling.status === POLLING_STATUS.UPLOADING
+                            ? "Uploading PGN..."
+                            : polling.status === POLLING_STATUS.PROCESSING
+                              ? "Analyzing Game..."
+                              : "Start Game Review"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* ==================================================================== */}
-      {/* TAB: AUTHENTICATED USER GAME HISTORY (DAY 16 PROTECTED)              */}
-      {/* ==================================================================== */}
-      {activeTab === "history" && (
-        <ProtectedRoute
-          destination="history"
-          destinationLabel="Your Analyzed Game History"
-          onAuthenticatedRedirect={(dest) => setActiveTab(dest)}
-        >
-          <UserGameHistory
-            isAuthenticated={isAuthenticated}
-            onLoadAnalyzedGame={(g, moves) => {
-              setSelectedGame(buildReviewedGameModel(g, moves));
-              setCurrentPlyIndex(0);
-              setActiveTab("analysis");
+          {/* TAB 2: AUTHENTICATED USER GAME HISTORY (DAY 16 PROTECTED) */}
+          {activeTab === "history" && (
+            <ProtectedRoute
+              destination="history"
+              destinationLabel="Your Analyzed Game History"
+              onAuthenticatedRedirect={(dest) => setActiveTab(dest)}
+            >
+              <UserGameHistory
+                isAuthenticated={isAuthenticated}
+                onLoadAnalyzedGame={(g, moves) => {
+                  setSelectedGame(buildReviewedGameModel(g, moves));
+                  setCurrentPlyIndex(0);
+                  setActiveTab("analysis");
+                }}
+                onGoToUpload={() => setActiveTab("analysis")}
+              />
+            </ProtectedRoute>
+          )}
+
+          {/* TAB 3: PLAYER ACCURACY & LONGITUDINAL PROGRESSION (DAY 16 PROTECTED) */}
+          {activeTab === "insights" && (
+            <ProtectedRoute
+              destination="insights"
+              destinationLabel="Longitudinal Analytics & Phase Radar"
+              onAuthenticatedRedirect={(dest) => setActiveTab(dest)}
+            >
+              <LongitudinalRadarChart
+                gameMoves={gameMoves}
+                historicalGames={MASTER_GAMES}
+                selectedGame={selectedGame}
+                onSelectGame={(g) => {
+                  setSelectedGame(g);
+                  setCurrentPlyIndex(0);
+                  setActiveTab("analysis");
+                }}
+              />
+            </ProtectedRoute>
+          )}
+
+          {/* TAB 4: PERSONALIZED TRAINING PUZZLES (DAY 15 + DAY 16 PROTECTED) */}
+          {activeTab === "puzzles" && (
+            <ProtectedRoute
+              destination="puzzles"
+              destinationLabel="Personalized Tactical Training Puzzles"
+              onAuthenticatedRedirect={(dest) => setActiveTab(dest)}
+            >
+              <TrainingDashboard
+                isAuthenticated={isAuthenticated}
+                isSoundEnabled={isSoundEnabled}
+                onToggleSound={() => setIsSoundEnabled((s) => !s)}
+                onNavigateToAnalysis={() => setActiveTab("analysis")}
+              />
+            </ProtectedRoute>
+          )}
+
+          {/* TAB 5: SIGN-IN / REGISTRATION VIEW (DAY 16) */}
+          {activeTab === "auth" && (
+            <LoginForm
+              onSuccess={() => {
+                const dest =
+                  intendedDestination && intendedDestination !== "auth"
+                    ? intendedDestination
+                    : "analysis";
+                setIntendedDestination(null);
+                setActiveTab(dest);
+              }}
+            />
+          )}
+
+          {/* EDITORIAL SYSTEM STATUS FOOTER */}
+          <footer
+            style={{
+              marginTop: "48px",
+              paddingTop: "18px",
+              borderTop: "1px solid var(--border-subtle)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "12px",
+              fontSize: "12px",
+              color: "var(--text-muted)",
             }}
-            onGoToUpload={() => setActiveTab("analysis")}
-          />
-        </ProtectedRoute>
-      )}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: "7px",
+                  height: "7px",
+                  borderRadius: "50%",
+                  backgroundColor:
+                    telemetry?.status === "healthy"
+                      ? "var(--accent-sage)"
+                      : "var(--accent-clay)",
+                }}
+              />
+              <span>
+                Stockfish 16.1 NNUE Engine:{" "}
+                <strong style={{ color: "var(--accent-sage)" }}>
+                  {telemetry?.status === "healthy"
+                    ? "Online (Authoritative)"
+                    : "Connecting..."}
+                </strong>
+              </span>
+              <span style={{ color: "var(--border)" }}>•</span>
+              <span>
+                Latency:{" "}
+                <strong
+                  style={{
+                    color: "var(--text-secondary)",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  {telemetry?.latency_ms !== undefined
+                    ? `${telemetry.latency_ms} ms`
+                    : "4 ms"}
+                </strong>
+              </span>
+            </div>
 
-      {/* ==================================================================== */}
-      {/* TAB 2: PLAYER ACCURACY & LONGITUDINAL PROGRESSION (DAY 16 PROTECTED) */}
-      {/* ==================================================================== */}
-      {activeTab === "insights" && (
-        <ProtectedRoute
-          destination="insights"
-          destinationLabel="Longitudinal Analytics & Phase Radar"
-          onAuthenticatedRedirect={(dest) => setActiveTab(dest)}
-        >
-          <LongitudinalRadarChart
-            gameMoves={gameMoves}
-            historicalGames={MASTER_GAMES}
-            selectedGame={selectedGame}
-            onSelectGame={(g) => {
-              setSelectedGame(g);
-              setCurrentPlyIndex(0);
-              setActiveTab("analysis");
-            }}
-          />
-        </ProtectedRoute>
-      )}
+            <div>
+              <span>ChessIQ v3.3.0 • Grandmaster Editorial Intelligence</span>
+            </div>
+          </footer>
+        </main>
+      </div>
 
-      {/* ==================================================================== */}
-      {/* TAB 3: PERSONALIZED TRAINING PUZZLES (DAY 15 + DAY 16 PROTECTED)     */}
-      {/* ==================================================================== */}
-      {activeTab === "puzzles" && (
-        <ProtectedRoute
-          destination="puzzles"
-          destinationLabel="Personalized Tactical Training Puzzles"
-          onAuthenticatedRedirect={(dest) => setActiveTab(dest)}
-        >
-          <TrainingDashboard
-            isAuthenticated={isAuthenticated}
-            isSoundEnabled={isSoundEnabled}
-            onToggleSound={() => setIsSoundEnabled((s) => !s)}
-            onNavigateToAnalysis={() => setActiveTab("analysis")}
-          />
-        </ProtectedRoute>
-      )}
-
-      {/* ==================================================================== */}
-      {/* SIGN-IN / REGISTRATION VIEW (DAY 16)                                 */}
-      {/* ==================================================================== */}
-      {activeTab === "auth" && (
-        <LoginForm
-          onSuccess={() => {
-            const dest =
-              intendedDestination && intendedDestination !== "auth"
-                ? intendedDestination
-                : "analysis";
-            setIntendedDestination(null);
-            setActiveTab(dest);
-          }}
-        />
-      )}
-
-      {/* ==================================================================== */}
-      {/* CLEAN SYSTEM STATUS FOOTER (UNOBTRUSIVE)                              */}
-      {/* ==================================================================== */}
-      <footer
-        style={{
-          marginTop: "40px",
-          paddingTop: "16px",
-          borderTop: "1px solid var(--border-color)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "12px",
-          fontSize: "12px",
-          color: "var(--text-muted)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div
-            className={`live-indicator ${telemetry?.status === "healthy" ? "healthy" : "connecting"}`}
-          />
-          <span>
-            Stockfish 16 NNUE Engine:{" "}
-            <strong style={{ color: "var(--accent-emerald)" }}>
-              {telemetry?.status === "healthy"
-                ? "Online (Connected)"
-                : "Connecting..."}
-            </strong>
-          </span>
-          <span style={{ color: "var(--border-color)" }}>•</span>
-          <span>
-            Latency:{" "}
-            <strong style={{ color: "var(--text-secondary)" }}>
-              {telemetry?.latency_ms !== undefined
-                ? `${telemetry.latency_ms} ms`
-                : "4 ms"}
-            </strong>
-          </span>
-        </div>
-
-        <div>
-          <span>ChessIQ v3.3.0 • Master Chess Intelligence Platform</span>
-        </div>
-      </footer>
+      {/* Studio Preferences Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        boardThemeKey={boardThemeKey}
+        onChangeBoardTheme={setBoardThemeKey}
+        isSoundEnabled={isSoundEnabled}
+        onToggleSound={() => setIsSoundEnabled((s) => !s)}
+        showEngineArrow={showEngineArrow}
+        onToggleEngineArrow={() => setShowEngineArrow((prev) => !prev)}
+      />
     </div>
   );
 }
