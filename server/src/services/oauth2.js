@@ -234,7 +234,9 @@ async function fetchOAuthUserProfile(providerId, accessToken) {
 
   const userRes = await fetch(cfg.userInfoUrl, { headers });
   if (!userRes.ok) {
-    throw new Error(`Failed to fetch ${cfg.name} user profile (${userRes.status})`);
+    throw new Error(
+      `Failed to fetch ${cfg.name} user profile (${userRes.status})`,
+    );
   }
   const profile = await userRes.json();
 

@@ -92,7 +92,10 @@ describe("Day 16: authenticate middleware (optional)", () => {
   });
 
   it("sets req.user = null and clears cookie on expired JWT", () => {
-    const token = signToken({ id: "u1", username: "u", email: "u@e.com" }, { expiresIn: "-1s" });
+    const token = signToken(
+      { id: "u1", username: "u", email: "u@e.com" },
+      { expiresIn: "-1s" },
+    );
     const { req, res, next, errors } = mockHttp({
       signedCookies: { chessiq_session: token },
     });
@@ -141,7 +144,10 @@ describe("Day 16: authenticate.required middleware", () => {
   });
 
   it("calls next(AppError 401) for an expired token", () => {
-    const token = signToken({ id: "u3", username: "bob", email: "b@c.com" }, { expiresIn: "-1s" });
+    const token = signToken(
+      { id: "u3", username: "bob", email: "b@c.com" },
+      { expiresIn: "-1s" },
+    );
     const { req, res, next, errors } = mockHttp({
       signedCookies: { chessiq_session: token },
     });
@@ -243,7 +249,9 @@ describe("Day 16: Cookie topology", () => {
   });
 
   it("uses sameSite=Lax in production, None in development/test", () => {
-    const devOpts = { sameSite: env.NODE_ENV === "production" ? "Lax" : "None" };
+    const devOpts = {
+      sameSite: env.NODE_ENV === "production" ? "Lax" : "None",
+    };
     // In test environment NODE_ENV should not be production
     expect(["Lax", "None"]).toContain(devOpts.sameSite);
   });
@@ -255,7 +263,12 @@ describe("Day 16: Cookie topology", () => {
 
 describe("Day 16: JWT sign/verify round-trip", () => {
   it("verifies a freshly signed token", () => {
-    const payload = { id: "abc", username: "player", email: "p@q.com", chess_rating: 1800 };
+    const payload = {
+      id: "abc",
+      username: "player",
+      email: "p@q.com",
+      chess_rating: 1800,
+    };
     const token = signToken(payload);
     const decoded = jwt.verify(token, env.JWT_SECRET);
     expect(decoded.id).toBe("abc");
@@ -277,7 +290,12 @@ describe("Day 16: JWT sign/verify round-trip", () => {
   });
 
   it("includes chess_rating = null when not provided", () => {
-    const token = signToken({ id: "z", username: "u", email: "u@v.com", chess_rating: null });
+    const token = signToken({
+      id: "z",
+      username: "u",
+      email: "u@v.com",
+      chess_rating: null,
+    });
     const decoded = jwt.verify(token, env.JWT_SECRET);
     expect(decoded.chess_rating).toBeNull();
   });
@@ -312,7 +330,10 @@ describe("Day 16: Module structure", () => {
   const path = require("path");
 
   const authRoutePath = path.resolve(__dirname, "../src/routes/auth.js");
-  const middlewarePath = path.resolve(__dirname, "../src/middleware/authenticate.js");
+  const middlewarePath = path.resolve(
+    __dirname,
+    "../src/middleware/authenticate.js",
+  );
 
   it("auth route file exists", () => {
     expect(fs.existsSync(authRoutePath)).toBe(true);
@@ -341,7 +362,7 @@ describe("Day 16: Module structure", () => {
       "utf8",
     );
     expect(appSrc).toContain("/api/auth");
-    expect(appSrc).toContain("require(\"./routes/auth\")");
+    expect(appSrc).toContain('require("./routes/auth")');
   });
 });
 
@@ -367,51 +388,86 @@ describe("Day 16: PostgreSQL 6NF auth integration (@DB)", () => {
   });
 
   const itDb = (name, fn) => {
-    it(name, async () => {
-      if (!dbAvailable) return;
-      await fn();
-    }, 20000);
+    it(
+      name,
+      async () => {
+        if (!dbAvailable) return;
+        await fn();
+      },
+      20000,
+    );
   };
 
-  itDb("can register a new user in 6NF tables and retrieve via v_users", async () => {
-    const suffix = crypto.randomBytes(4).toString("hex");
-    const username = `testuser_${suffix}`;
-    const email = `testuser_${suffix}@chessiq-test.local`;
-    const password = "securepassword123";
-    const passwordHash = await bcrypt.hash(password, 10); // cost 10 for speed in tests
+  itDb(
+    "can register a new user in 6NF tables and retrieve via v_users",
+    async () => {
+      const suffix = crypto.randomBytes(4).toString("hex");
+      const username = `testuser_${suffix}`;
+      const email = `testuser_${suffix}@chessiq-test.local`;
+      const password = "securepassword123";
+      const passwordHash = await bcrypt.hash(password, 10); // cost 10 for speed in tests
 
-    // Insert into 6NF tables
-    const userRes = await pool.query("INSERT INTO users DEFAULT VALUES RETURNING id");
-    const userId = userRes.rows[0].id;
+      // Insert into 6NF tables
+      const userRes = await pool.query(
+        "INSERT INTO users DEFAULT VALUES RETURNING id",
+      );
+      const userId = userRes.rows[0].id;
 
-    await pool.query("INSERT INTO user_usernames (user_id, username) VALUES ($1, $2)", [userId, username]);
-    await pool.query("INSERT INTO user_emails (user_id, email) VALUES ($1, $2)", [userId, email]);
-    await pool.query("INSERT INTO user_password_hashes (user_id, password_hash) VALUES ($1, $2)", [userId, passwordHash]);
-    await pool.query("INSERT INTO user_ratings (user_id, chess_rating, valid_during) VALUES ($1, $2, tstzrange(NOW(), NULL, '[)'))", [userId, 1400]);
-    await pool.query("INSERT INTO user_created_at (user_id) VALUES ($1)", [userId]);
-    await pool.query("INSERT INTO user_updated_at (user_id) VALUES ($1)", [userId]);
+      await pool.query(
+        "INSERT INTO user_usernames (user_id, username) VALUES ($1, $2)",
+        [userId, username],
+      );
+      await pool.query(
+        "INSERT INTO user_emails (user_id, email) VALUES ($1, $2)",
+        [userId, email],
+      );
+      await pool.query(
+        "INSERT INTO user_password_hashes (user_id, password_hash) VALUES ($1, $2)",
+        [userId, passwordHash],
+      );
+      await pool.query(
+        "INSERT INTO user_ratings (user_id, chess_rating, valid_during) VALUES ($1, $2, tstzrange(NOW(), NULL, '[)'))",
+        [userId, 1400],
+      );
+      await pool.query("INSERT INTO user_created_at (user_id) VALUES ($1)", [
+        userId,
+      ]);
+      await pool.query("INSERT INTO user_updated_at (user_id) VALUES ($1)", [
+        userId,
+      ]);
 
-    // Verify via 3NF view
-    const viewRes = await pool.query("SELECT * FROM v_users WHERE id = $1", [userId]);
-    expect(viewRes.rows.length).toBe(1);
-    const profile = viewRes.rows[0];
-    expect(profile.username).toBe(username);
-    expect(profile.email).toBe(email);
-    expect(Number(profile.chess_rating)).toBe(1400);
+      // Verify via 3NF view
+      const viewRes = await pool.query("SELECT * FROM v_users WHERE id = $1", [
+        userId,
+      ]);
+      expect(viewRes.rows.length).toBe(1);
+      const profile = viewRes.rows[0];
+      expect(profile.username).toBe(username);
+      expect(profile.email).toBe(email);
+      expect(Number(profile.chess_rating)).toBe(1400);
 
-    // Verify password hash correctness
-    // We know passwordHash is correct since we just set it
-    expect(await bcrypt.compare(password, passwordHash)).toBe(true);
+      // Verify password hash correctness
+      // We know passwordHash is correct since we just set it
+      expect(await bcrypt.compare(password, passwordHash)).toBe(true);
 
-    // Cleanup
-    await pool.query("DELETE FROM user_ratings WHERE user_id = $1", [userId]);
-    await pool.query("DELETE FROM user_created_at WHERE user_id = $1", [userId]);
-    await pool.query("DELETE FROM user_updated_at WHERE user_id = $1", [userId]);
-    await pool.query("DELETE FROM user_password_hashes WHERE user_id = $1", [userId]);
-    await pool.query("DELETE FROM user_emails WHERE user_id = $1", [userId]);
-    await pool.query("DELETE FROM user_usernames WHERE user_id = $1", [userId]);
-    await pool.query("DELETE FROM users WHERE id = $1", [userId]);
-  });
+      // Cleanup
+      await pool.query("DELETE FROM user_ratings WHERE user_id = $1", [userId]);
+      await pool.query("DELETE FROM user_created_at WHERE user_id = $1", [
+        userId,
+      ]);
+      await pool.query("DELETE FROM user_updated_at WHERE user_id = $1", [
+        userId,
+      ]);
+      await pool.query("DELETE FROM user_password_hashes WHERE user_id = $1", [
+        userId,
+      ]);
+      await pool.query("DELETE FROM user_emails WHERE user_id = $1", [userId]);
+      await pool.query("DELETE FROM user_usernames WHERE user_id = $1", [
+        userId,
+      ]);
+      await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+    },
+  );
 
   itDb("v_users view returns expected columns", async () => {
     const res = await pool.query("SELECT * FROM v_users LIMIT 0");
@@ -426,16 +482,26 @@ describe("Day 16: PostgreSQL 6NF auth integration (@DB)", () => {
     const suffix = crypto.randomBytes(4).toString("hex");
     const username = `dup_${suffix}`;
 
-    const userRes1 = await pool.query("INSERT INTO users DEFAULT VALUES RETURNING id");
+    const userRes1 = await pool.query(
+      "INSERT INTO users DEFAULT VALUES RETURNING id",
+    );
     const userId1 = userRes1.rows[0].id;
-    await pool.query("INSERT INTO user_usernames (user_id, username) VALUES ($1, $2)", [userId1, username]);
+    await pool.query(
+      "INSERT INTO user_usernames (user_id, username) VALUES ($1, $2)",
+      [userId1, username],
+    );
 
-    const userRes2 = await pool.query("INSERT INTO users DEFAULT VALUES RETURNING id");
+    const userRes2 = await pool.query(
+      "INSERT INTO users DEFAULT VALUES RETURNING id",
+    );
     const userId2 = userRes2.rows[0].id;
 
     let threw = false;
     try {
-      await pool.query("INSERT INTO user_usernames (user_id, username) VALUES ($1, $2)", [userId2, username]);
+      await pool.query(
+        "INSERT INTO user_usernames (user_id, username) VALUES ($1, $2)",
+        [userId2, username],
+      );
     } catch (err) {
       threw = true;
       // Postgres unique violation code is 23505
@@ -444,7 +510,9 @@ describe("Day 16: PostgreSQL 6NF auth integration (@DB)", () => {
     expect(threw).toBe(true);
 
     // Cleanup
-    await pool.query("DELETE FROM user_usernames WHERE user_id = $1", [userId1]);
+    await pool.query("DELETE FROM user_usernames WHERE user_id = $1", [
+      userId1,
+    ]);
     await pool.query("DELETE FROM users WHERE id = $1", [userId1]);
     await pool.query("DELETE FROM users WHERE id = $1", [userId2]);
   });

@@ -294,28 +294,25 @@ describe("Day 16: OAuth 2.0 Express Routes", () => {
     });
 
     expect(res.statusCode).toBe(302);
-    expect(res.redirectUrl).toContain("https://accounts.google.com/o/oauth2/v2/auth");
+    expect(res.redirectUrl).toContain(
+      "https://accounts.google.com/o/oauth2/v2/auth",
+    );
     expect(res.cookies.chessiq_oauth_state).toBeDefined();
     expect(res.cookies.chessiq_oauth_state.options.httpOnly).toBe(true);
     expect(res.cookies.chessiq_oauth_state.options.signed).toBe(true);
   });
 
   it("GET /oauth/:provider/callback rejects CSRF state mismatch", async () => {
-    const res = await callRouter(
-      authRouter,
-      "GET",
-      "/oauth/google/callback",
-      {
-        query: { code: "abc", state: "wrong-state" },
-        signedCookies: {
-          chessiq_oauth_state: JSON.stringify({
-            provider: "google",
-            state: "expected-state",
-            codeVerifier: "verifier",
-          }),
-        },
+    const res = await callRouter(authRouter, "GET", "/oauth/google/callback", {
+      query: { code: "abc", state: "wrong-state" },
+      signedCookies: {
+        chessiq_oauth_state: JSON.stringify({
+          provider: "google",
+          state: "expected-state",
+          codeVerifier: "verifier",
+        }),
       },
-    );
+    });
 
     expect(res.statusCode).toBe(302);
     expect(res.redirectUrl).toContain("oauth_error=");
@@ -340,10 +337,14 @@ describe("Day 16: PostgreSQL 6NF OAuth 2.0 Integration (@DB)", () => {
   });
 
   const itDb = (name, fn) => {
-    it(name, async () => {
-      if (!dbAvailable) return;
-      await fn();
-    }, 20000);
+    it(
+      name,
+      async () => {
+        if (!dbAvailable) return;
+        await fn();
+      },
+      20000,
+    );
   };
 
   itDb(
@@ -371,23 +372,20 @@ describe("Day 16: PostgreSQL 6NF OAuth 2.0 Integration (@DB)", () => {
         "INSERT INTO user_ratings (user_id, chess_rating, valid_during) VALUES ($1, $2, tstzrange(NOW(), NULL, '[)'))",
         [userId, 1200],
       );
-      await pool.query(
-        "INSERT INTO user_created_at (user_id) VALUES ($1)",
-        [userId],
-      );
-      await pool.query(
-        "INSERT INTO user_updated_at (user_id) VALUES ($1)",
-        [userId],
-      );
+      await pool.query("INSERT INTO user_created_at (user_id) VALUES ($1)", [
+        userId,
+      ]);
+      await pool.query("INSERT INTO user_updated_at (user_id) VALUES ($1)", [
+        userId,
+      ]);
       await pool.query(
         "INSERT INTO user_oauth_identities (user_id, provider, provider_user_id) VALUES ($1, $2, $3)",
         [userId, "google", providerUid],
       );
 
-      const viewRes = await pool.query(
-        "SELECT * FROM v_users WHERE id = $1",
-        [userId],
-      );
+      const viewRes = await pool.query("SELECT * FROM v_users WHERE id = $1", [
+        userId,
+      ]);
       expect(viewRes.rows.length).toBe(1);
       expect(viewRes.rows[0].username).toBe(username);
       expect(viewRes.rows[0].email).toBe(email);
@@ -437,7 +435,8 @@ describe("Day 16: PostgreSQL 6NF OAuth 2.0 Integration (@DB)", () => {
               provider: "github",
               state,
               codeVerifier: "pkce-verifier-xyz",
-              redirectUri: "http://localhost:3000/api/auth/oauth/github/callback",
+              redirectUri:
+                "http://localhost:3000/api/auth/oauth/github/callback",
             }),
           },
         },

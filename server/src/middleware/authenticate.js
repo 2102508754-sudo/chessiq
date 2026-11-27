@@ -87,15 +87,11 @@ authenticate.required = function requireAuth(req, res, next) {
     res.clearCookie("chessiq_session");
     if (err.name === "TokenExpiredError") {
       return next(
-        AppError.unauthorized(
-          "Session expired. Please log in again.",
-        ),
+        AppError.unauthorized("Session expired. Please log in again."),
       );
     }
     return next(
-      AppError.unauthorized(
-        "Invalid session token. Please log in again.",
-      ),
+      AppError.unauthorized("Invalid session token. Please log in again."),
     );
   }
 };

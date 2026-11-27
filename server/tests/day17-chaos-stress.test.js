@@ -12,11 +12,10 @@
  */
 
 const request = require("supertest");
-const express = require("express");
+const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { spawn } = require("child_process");
-const gamesRouter = require("../src/routes/games");
-const AppError = require("../src/utils/AppError");
+const app = require("../src/app");
 const { pool, closePool } = require("../src/db/pool");
 const { ingestGameAnalysis6NF } = require("../src/db/ingestion");
 const { claimNextJob, markJobCompleted } = require("../src/queue/jobClaim");
@@ -71,6 +70,7 @@ function generateSyntheticMoves(count = 80) {
 describe("Day 17: End-to-End Concurrency & Fault-Injection Chaos Verification", () => {
   let chaosUserId;
   const chaosUsername = `chaos_user_${CHAOS_RUN_TAG}`;
+  const chaosPassword = `ChaosPass_${CHAOS_RUN_TAG}!`;
   const createdGameIds = [];
   const createdJobIds = [];
 
@@ -79,6 +79,7 @@ describe("Day 17: End-to-End Concurrency & Fault-Injection Chaos Verification", 
       "INSERT INTO users DEFAULT VALUES RETURNING id;",
     );
     chaosUserId = userRes.rows[0].id;
+    const passwordHash = await bcrypt.hash(chaosPassword, 10);
 
     await pool.query(
       "INSERT INTO user_usernames (user_id, username) VALUES ($1, $2);",
@@ -89,13 +90,19 @@ describe("Day 17: End-to-End Concurrency & Fault-Injection Chaos Verification", 
       [chaosUserId, `${chaosUsername}@chessiq.io`],
     );
     await pool.query(
-      "INSERT INTO user_password_hashes (user_id, password_hash) VALUES ($1, 'chaos_argon2_mock');",
-      [chaosUserId],
+      "INSERT INTO user_password_hashes (user_id, password_hash) VALUES ($1, $2);",
+      [chaosUserId, passwordHash],
     );
     await pool.query(
       "INSERT INTO user_ratings (user_id, chess_rating, valid_during) VALUES ($1, 1650, tstzrange(CURRENT_TIMESTAMP, NULL, '[)'));",
       [chaosUserId],
     );
+    await pool.query("INSERT INTO user_created_at (user_id) VALUES ($1);", [
+      chaosUserId,
+    ]);
+    await pool.query("INSERT INTO user_updated_at (user_id) VALUES ($1);", [
+      chaosUserId,
+    ]);
   });
 
   afterAll(async () => {
@@ -124,31 +131,27 @@ describe("Day 17: End-to-End Concurrency & Fault-Injection Chaos Verification", 
   // ==========================================================================
   describe("1. Concurrent Canonical Move Deduplication Storm", () => {
     it("allows exactly 1 upload and rejects 9 simultaneous duplicates with 409 Conflict", async () => {
-      const chaosApp = express();
-      chaosApp.use(express.json());
-      chaosApp.use((req, _res, next) => {
-        req.user = { id: chaosUserId, username: chaosUsername };
-        next();
+      const loginRes = await request(app).post("/api/auth/login").send({
+        username: chaosUsername,
+        password: chaosPassword,
       });
-      chaosApp.use("/api/games", gamesRouter);
-      chaosApp.use((err, _req, res, _next) => {
-        if (err instanceof AppError) {
-          return res.status(err.statusCode).json(err.toJSON());
-        }
-        return res
-          .status(500)
-          .json({ error: "INTERNAL_ERROR", message: err.message });
-      });
+      expect(loginRes.status).toBe(200);
+      const setCookies = loginRes.headers["set-cookie"];
+      expect(Array.isArray(setCookies) && setCookies.length > 0).toBe(true);
+      const cookieHeader = setCookies.map((c) => c.split(";")[0]).join("; ");
 
       const pgn = buildChaosPgn(CHAOS_RUN_TAG);
       const concurrentRequests = 10;
 
       const responses = await Promise.all(
         Array.from({ length: concurrentRequests }, () =>
-          request(chaosApp).post("/api/games/upload").send({
-            pgn,
-            user_color: "WHITE",
-          }),
+          request(app)
+            .post("/api/games/upload")
+            .set("Cookie", cookieHeader)
+            .send({
+              pgn,
+              user_color: "WHITE",
+            }),
         ),
       );
 

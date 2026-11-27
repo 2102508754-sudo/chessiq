@@ -577,7 +577,7 @@ export default function LoginForm({
               style={{
                 flex: 1,
                 height: "1px",
-                background: "var(--border-color)",
+                background: "var(--border)",
               }}
             />
             <span
@@ -595,7 +595,7 @@ export default function LoginForm({
               style={{
                 flex: 1,
                 height: "1px",
-                background: "var(--border-color)",
+                background: "var(--border)",
               }}
             />
           </div>
@@ -623,8 +623,8 @@ export default function LoginForm({
                   gap: "8px",
                   padding: "10px 14px",
                   borderRadius: "8px",
-                  border: "1px solid var(--border-color)",
-                  background: "rgba(255, 255, 255, 0.04)",
+                  border: "1px solid var(--border)",
+                  background: "var(--surface-secondary)",
                   color: "var(--text-primary)",
                   fontSize: "13px",
                   fontWeight: "600",

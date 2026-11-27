@@ -107,13 +107,15 @@ router.post("/register", async (req, res, next) => {
 
     // --- Input validation ---
     const usernameErr = validateUsername(username);
-    if (usernameErr) throw AppError.validationError(usernameErr, { field: "username" });
+    if (usernameErr)
+      throw AppError.validationError(usernameErr, { field: "username" });
 
     const emailErr = validateEmail(email);
     if (emailErr) throw AppError.validationError(emailErr, { field: "email" });
 
     const passwordErr = validatePassword(password);
-    if (passwordErr) throw AppError.validationError(passwordErr, { field: "password" });
+    if (passwordErr)
+      throw AppError.validationError(passwordErr, { field: "password" });
 
     const normalizedUsername = username.trim();
     const normalizedEmail = email.trim().toLowerCase();
@@ -186,14 +188,12 @@ router.post("/register", async (req, res, next) => {
       );
 
       // 6. Set creation and update timestamps
-      await client.query(
-        "INSERT INTO user_created_at (user_id) VALUES ($1)",
-        [userId],
-      );
-      await client.query(
-        "INSERT INTO user_updated_at (user_id) VALUES ($1)",
-        [userId],
-      );
+      await client.query("INSERT INTO user_created_at (user_id) VALUES ($1)", [
+        userId,
+      ]);
+      await client.query("INSERT INTO user_updated_at (user_id) VALUES ($1)", [
+        userId,
+      ]);
 
       newUser = {
         id: userId,
@@ -236,10 +236,9 @@ router.post("/login", async (req, res, next) => {
     }
 
     if (!username && !email) {
-      throw AppError.validationError(
-        "Either username or email is required.",
-        { field: "username" },
-      );
+      throw AppError.validationError("Either username or email is required.", {
+        field: "username",
+      });
     }
 
     // --- Look up user by email or username ---
@@ -289,7 +288,10 @@ router.post("/login", async (req, res, next) => {
       );
     }
 
-    const isValid = await bcrypt.compare(password, hashRes.rows[0].password_hash);
+    const isValid = await bcrypt.compare(
+      password,
+      hashRes.rows[0].password_hash,
+    );
     if (!isValid) {
       throw new AppError(
         "INVALID_CREDENTIALS",
@@ -346,7 +348,9 @@ router.get("/me", authenticate, async (req, res, next) => {
     if (!profileRes.rows[0]) {
       // User deleted after token was issued
       res.clearCookie("chessiq_session");
-      throw AppError.unauthorized("User account not found. Please log in again.");
+      throw AppError.unauthorized(
+        "User account not found. Please log in again.",
+      );
     }
 
     const profile = profileRes.rows[0];
@@ -451,7 +455,8 @@ router.get("/oauth/:provider", (req, res, next) => {
       );
     }
 
-    const { state, codeVerifier, codeChallenge } = generateOAuthSecurityParams();
+    const { state, codeVerifier, codeChallenge } =
+      generateOAuthSecurityParams();
     const redirectUri = buildRedirectUri(providerId, resolveRequestOrigin(req));
     const authUrl = buildAuthorizationUrl(providerId, {
       state,
@@ -462,7 +467,12 @@ router.get("/oauth/:provider", (req, res, next) => {
     const isProduction = env.NODE_ENV === "production";
     res.cookie(
       OAUTH_STATE_COOKIE,
-      JSON.stringify({ provider: providerId, state, codeVerifier, redirectUri }),
+      JSON.stringify({
+        provider: providerId,
+        state,
+        codeVerifier,
+        redirectUri,
+      }),
       {
         httpOnly: true,
         signed: true,
@@ -641,7 +651,9 @@ router.get("/oauth/:provider/callback", async (req, res, next) => {
       { err: err.message, provider: providerId },
       "OAuth 2.0 callback error",
     );
-    return redirectWithError("OAuth 2.0 authentication failed. Please try again.");
+    return redirectWithError(
+      "OAuth 2.0 authentication failed. Please try again.",
+    );
   }
 });
 
