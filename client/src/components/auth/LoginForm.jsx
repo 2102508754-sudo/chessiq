@@ -90,12 +90,12 @@ export default function LoginForm({
 
   return (
     <div
-      className="glass-panel"
+      className="editorial-card"
       style={{
         maxWidth: "460px",
         margin: "24px auto",
         padding: "28px",
-        borderTop: "3px solid var(--accent-cyan)",
+        borderTop: "3px solid var(--accent-gold)",
       }}
     >
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -107,13 +107,21 @@ export default function LoginForm({
             height: "56px",
             borderRadius: "12px",
             objectFit: "cover",
-            border: "1px solid rgba(56, 189, 248, 0.35)",
-            boxShadow: "0 0 20px rgba(56, 189, 248, 0.2)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-md)",
             marginBottom: "12px",
             background: "#000",
           }}
         />
-        <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "6px" }}>
+        <h2
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: "22px",
+            fontWeight: "600",
+            marginBottom: "6px",
+            color: "var(--text-primary)",
+          }}
+        >
           {mode === "login" ? "Sign In to ChessIQ" : "Create ChessIQ Account"}
         </h2>
         <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
@@ -130,9 +138,9 @@ export default function LoginForm({
           gridTemplateColumns: "1fr 1fr",
           gap: "6px",
           padding: "4px",
-          background: "rgba(255, 255, 255, 0.04)",
+          background: "var(--surface-secondary)",
           borderRadius: "8px",
-          border: "1px solid var(--border-color)",
+          border: "1px solid var(--border)",
           marginBottom: "18px",
         }}
       >
@@ -150,13 +158,15 @@ export default function LoginForm({
             fontWeight: "600",
             cursor: "pointer",
             background:
-              mode === "login" ? "rgba(56, 189, 248, 0.2)" : "transparent",
+              mode === "login" ? "var(--surface-primary)" : "transparent",
             color:
-              mode === "login" ? "var(--text-primary)" : "var(--text-secondary)",
+              mode === "login" ? "var(--accent-gold)" : "var(--text-secondary)",
             border:
               mode === "login"
-                ? "1px solid rgba(56, 189, 248, 0.4)"
+                ? "1px solid var(--accent-gold)"
                 : "1px solid transparent",
+            boxShadow: mode === "login" ? "var(--shadow-sm)" : "none",
+            transition: "all 0.15s ease",
           }}
         >
           <LogIn size={14} /> Sign In
@@ -175,13 +185,15 @@ export default function LoginForm({
             fontWeight: "600",
             cursor: "pointer",
             background:
-              mode === "register" ? "rgba(99, 102, 241, 0.2)" : "transparent",
+              mode === "register" ? "var(--surface-primary)" : "transparent",
             color:
-              mode === "register" ? "var(--text-primary)" : "var(--text-secondary)",
+              mode === "register" ? "var(--accent-gold)" : "var(--text-secondary)",
             border:
               mode === "register"
-                ? "1px solid rgba(99, 102, 241, 0.4)"
+                ? "1px solid var(--accent-gold)"
                 : "1px solid transparent",
+            boxShadow: mode === "register" ? "var(--shadow-sm)" : "none",
+            transition: "all 0.15s ease",
           }}
         >
           <UserPlus size={14} /> Register
@@ -198,9 +210,9 @@ export default function LoginForm({
             gap: "10px",
             padding: "10px 12px",
             borderRadius: "8px",
-            background: "rgba(245, 158, 11, 0.14)",
-            border: "1px solid rgba(245, 158, 11, 0.35)",
-            color: "#fbbf24",
+            background: "var(--accent-gold-light)",
+            border: "1px solid var(--accent-gold)",
+            color: "var(--accent-gold)",
             fontSize: "12px",
             marginBottom: "14px",
           }}
@@ -220,9 +232,9 @@ export default function LoginForm({
             gap: "10px",
             padding: "10px 12px",
             borderRadius: "8px",
-            background: "rgba(99, 102, 241, 0.12)",
-            border: "1px solid rgba(99, 102, 241, 0.35)",
-            color: "#a5b4fc",
+            background: "var(--surface-secondary)",
+            border: "1px solid var(--border)",
+            color: "var(--text-secondary)",
             fontSize: "12px",
             lineHeight: "1.45",
             marginBottom: "14px",
@@ -247,9 +259,9 @@ export default function LoginForm({
             gap: "10px",
             padding: "10px 12px",
             borderRadius: "8px",
-            background: "rgba(244, 63, 94, 0.14)",
-            border: "1px solid rgba(244, 63, 94, 0.38)",
-            color: "#fb7185",
+            background: "var(--accent-clay-light)",
+            border: "1px solid var(--accent-clay)",
+            color: "var(--accent-clay)",
             fontSize: "12px",
             lineHeight: "1.45",
             marginBottom: "14px",
@@ -293,8 +305,8 @@ export default function LoginForm({
                   width: "100%",
                   padding: "10px 12px 10px 36px",
                   borderRadius: "8px",
-                  border: "1px solid var(--border-color)",
-                  background: "rgba(10, 12, 16, 0.65)",
+                  border: "1px solid var(--border)",
+                  background: "var(--surface-secondary)",
                   color: "var(--text-primary)",
                   fontSize: "13px",
                   outline: "none",
@@ -335,8 +347,8 @@ export default function LoginForm({
                     width: "100%",
                     padding: "10px 12px 10px 36px",
                     borderRadius: "8px",
-                    border: "1px solid var(--border-color)",
-                    background: "rgba(10, 12, 16, 0.65)",
+                    border: "1px solid var(--border)",
+                    background: "var(--surface-secondary)",
                     color: "var(--text-primary)",
                     fontSize: "13px",
                     outline: "none",
@@ -376,8 +388,8 @@ export default function LoginForm({
                     width: "100%",
                     padding: "10px 12px 10px 36px",
                     borderRadius: "8px",
-                    border: "1px solid var(--border-color)",
-                    background: "rgba(10, 12, 16, 0.65)",
+                    border: "1px solid var(--border)",
+                    background: "var(--surface-secondary)",
                     color: "var(--text-primary)",
                     fontSize: "13px",
                     outline: "none",
@@ -411,8 +423,8 @@ export default function LoginForm({
                   width: "100%",
                   padding: "10px 12px",
                   borderRadius: "8px",
-                  border: "1px solid var(--border-color)",
-                  background: "rgba(10, 12, 16, 0.65)",
+                  border: "1px solid var(--border)",
+                  background: "var(--surface-secondary)",
                   color: "var(--text-primary)",
                   fontSize: "13px",
                   outline: "none",
@@ -453,8 +465,8 @@ export default function LoginForm({
                 width: "100%",
                 padding: "10px 12px 10px 36px",
                 borderRadius: "8px",
-                border: "1px solid var(--border-color)",
-                background: "rgba(10, 12, 16, 0.65)",
+                border: "1px solid var(--border)",
+                background: "var(--surface-secondary)",
                 color: "var(--text-primary)",
                 fontSize: "13px",
                 outline: "none",
@@ -496,7 +508,7 @@ export default function LoginForm({
         style={{
           marginTop: "18px",
           paddingTop: "14px",
-          borderTop: "1px solid var(--border-color)",
+          borderTop: "1px solid var(--border)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -505,7 +517,7 @@ export default function LoginForm({
           color: "var(--text-muted)",
         }}
       >
-        <ShieldCheck size={14} color="var(--accent-emerald)" />
+        <ShieldCheck size={14} color="var(--accent-sage)" />
         <span>
           Single-Domain First-Party Session Cookies (HttpOnly • SameSite=Lax)
         </span>

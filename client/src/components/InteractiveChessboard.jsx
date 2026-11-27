@@ -31,6 +31,11 @@ import { chessAudio } from "../utils/chessAudio";
 
 // Board color themes
 export const BOARD_THEMES = {
+  grandmaster: {
+    name: "Grandmaster Wood",
+    dark: "#9B8061",
+    light: "#E9DFC9",
+  },
   emerald: {
     name: "Classic Emerald",
     dark: "#779556",
@@ -109,8 +114,8 @@ export default function InteractiveChessboard({
   const [legalMoves, setLegalMoves] = useState([]);
 
   // Board Theme
-  const [themeKey, setThemeKey] = useState("emerald");
-  const currentTheme = BOARD_THEMES[themeKey] || BOARD_THEMES.emerald;
+  const [themeKey, setThemeKey] = useState("grandmaster");
+  const currentTheme = BOARD_THEMES[themeKey] || BOARD_THEMES.grandmaster;
 
   // Active FEN: Exploration FEN if in exploration mode, otherwise base position
   const activeFen = useMemo(() => {
@@ -178,13 +183,13 @@ export default function InteractiveChessboard({
   const customSquareStyles = useMemo(() => {
     const styles = {};
 
-    // 1. Highlight Last Move
+    // 1. Highlight Last Move (#C9B36B)
     if (lastMoveSquares) {
       styles[lastMoveSquares.from] = {
-        backgroundColor: "rgba(245, 158, 11, 0.28)",
+        backgroundColor: "rgba(201, 179, 107, 0.38)",
       };
       styles[lastMoveSquares.to] = {
-        backgroundColor: "rgba(245, 158, 11, 0.38)",
+        backgroundColor: "rgba(201, 179, 107, 0.58)",
       };
     }
 
@@ -192,25 +197,25 @@ export default function InteractiveChessboard({
     if (checkedKingSquare) {
       styles[checkedKingSquare] = {
         background:
-          "radial-gradient(ellipse at center, rgba(239, 68, 68, 0.9) 0%, rgba(239, 68, 68, 0.4) 65%, transparent 80%)",
+          "radial-gradient(ellipse at center, rgba(182, 110, 91, 0.95) 0%, rgba(182, 110, 91, 0.4) 65%, transparent 80%)",
       };
     }
 
-    // 3. Highlight Selected Square
+    // 3. Highlight Selected Square (#D6B45C)
     if (selectedSquare) {
       styles[selectedSquare] = {
-        backgroundColor: "rgba(56, 189, 248, 0.4)",
-        boxShadow: "inset 0 0 0 3px #38bdf8",
+        backgroundColor: "rgba(214, 180, 92, 0.45)",
+        boxShadow: "inset 0 0 0 3px #8B7650",
       };
     }
 
-    // 4. Highlight Legal Moves (Quiet = Centered Dot, Capture = Ring)
+    // 4. Highlight Legal Moves (Quiet = Centered Dot, Capture = Ring, #6F9878 / #B66E5B)
     legalMoves.forEach((move) => {
       const isCapture = !!move.captured;
       styles[move.to] = {
         background: isCapture
-          ? "radial-gradient(circle, transparent 55%, rgba(244, 63, 94, 0.7) 56%, rgba(244, 63, 94, 0.7) 70%, transparent 71%)"
-          : "radial-gradient(circle, rgba(56, 189, 248, 0.65) 24%, transparent 26%)",
+          ? "radial-gradient(circle, transparent 55%, rgba(182, 110, 91, 0.85) 56%, rgba(182, 110, 91, 0.85) 70%, transparent 71%)"
+          : "radial-gradient(circle, rgba(111, 152, 120, 0.85) 24%, transparent 26%)",
         cursor: "pointer",
         borderRadius: "4px",
       };
@@ -238,7 +243,7 @@ export default function InteractiveChessboard({
         currentMove.fenBefore || position,
       );
       if (squares) {
-        arrows.push([squares[0], squares[1], "rgb(56, 189, 248)"]); // Bright Cyan
+        arrows.push([squares[0], squares[1], "#788A70"]); // Restrained Sage Green
       }
     }
 
@@ -252,8 +257,8 @@ export default function InteractiveChessboard({
       arrows.push([
         lastMoveSquares.from,
         lastMoveSquares.to,
-        "rgba(244, 63, 94, 0.75)",
-      ]); // Rose Red
+        "#AE5E55",
+      ]); // Muted Blunder Red
     }
 
     return arrows;
